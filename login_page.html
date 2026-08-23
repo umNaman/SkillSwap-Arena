@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — SkillSwap</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:        #0A0E1A;
+    --surface:   #10152A;
+    --surface-2: #171E3A;
+    --line:      #262E52;
+    --text:      #EDEFF7;
+    --text-dim:  #8891B0;
+
+    --violet:  #7C6FF0;
+    --violet-d:#5B4FD1;
+    --cyan:    #38D9C9;
+    --amber:   #FFC94A;
+    --rose:    #FF6FA8;
+
+    --display: 'Outfit', sans-serif;
+    --sans:    'Inter', system-ui, sans-serif;
+    --mono:    'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased; min-height:100vh; }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  ::selection{ background:var(--violet); color:#fff; }
+  h1,h2{ font-family:var(--display); font-weight:700; letter-spacing:-0.01em; }
+
+  .eyebrow{
+    font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--cyan); display:inline-flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; background:var(--cyan); border-radius:50%; box-shadow:0 0 8px var(--cyan); }
+
+  /* page shell */
+  .shell{ display:grid; grid-template-columns:1fr; min-height:100vh; }
+  @media (min-width:980px){ .shell{ grid-template-columns:1fr 460px; } }
+
+  /* ---------- left brand panel ---------- */
+  .panel{
+    position:relative; display:none; flex-direction:column; justify-content:space-between;
+    padding:44px 52px; background:radial-gradient(circle at 30% 20%, var(--surface-2) 0%, var(--bg) 65%);
+    border-right:1px solid var(--line); overflow:hidden;
+  }
+  @media (min-width:980px){ .panel{ display:flex; } }
+
+  .logo{ display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:700; font-size:1.15rem; }
+  .logo .mark{ width:24px; height:24px; border-radius:7px; background:linear-gradient(135deg,var(--violet),var(--cyan)); }
+
+  .panel-copy{ max-width:420px; }
+  .panel-copy h1{ font-size:2.1rem; line-height:1.15; margin-top:16px; }
+  .panel-copy h1 .hl{ color:var(--cyan); }
+  .panel-copy p{ color:var(--text-dim); margin-top:14px; font-size:1rem; }
+
+  /* mini arena visual — matches hero, no pulse/glow */
+  .mini-arena{ position:relative; width:280px; height:280px; margin:36px auto 0; border-radius:50%; border:1px solid var(--line); background:radial-gradient(circle at center, var(--surface-2) 0%, var(--surface) 70%); }
+  .mini-ring{ position:absolute; inset:12%; border:1px dashed var(--line); border-radius:50%; }
+  .mini-topic{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; width:110px; text-align:center; }
+  .mini-topic .tlabel{ font-family:var(--mono); font-size:0.56rem; color:var(--cyan); letter-spacing:0.08em; text-transform:uppercase; }
+  .mini-topic p{ font-size:0.66rem; margin-top:4px; color:var(--text); }
+  .mini-node{ position:absolute; width:34px; height:34px; border-radius:50%; transform:translate(-50%,-50%); display:flex; align-items:center; justify-content:center; font-family:var(--display); font-size:0.68rem; font-weight:700; color:#fff; box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--line); }
+
+  .panel-quote{ font-family:var(--mono); font-size:0.8rem; color:var(--text-dim); border-left:2px solid var(--violet); padding-left:14px; }
+
+  /* ---------- right form panel ---------- */
+  .form-panel{ display:flex; flex-direction:column; justify-content:center; padding:48px 32px; }
+  .form-wrap{ width:100%; max-width:360px; margin:0 auto; }
+
+  .mobile-logo{ display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:700; font-size:1.1rem; margin-bottom:36px; }
+  .mobile-logo .mark{ width:22px; height:22px; border-radius:6px; background:linear-gradient(135deg,var(--violet),var(--cyan)); }
+  @media (min-width:980px){ .mobile-logo{ display:none; } }
+
+  .form-wrap h2{ font-size:1.6rem; }
+  .form-wrap .sub{ color:var(--text-dim); margin-top:8px; font-size:0.92rem; }
+
+  .mode-toggle{ display:flex; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px; margin-top:28px; }
+  .mode-btn{ flex:1; text-align:center; padding:9px 0; border-radius:7px; font-size:0.85rem; font-weight:600; color:var(--text-dim); cursor:pointer; transition:background .15s ease, color .15s ease; border:none; background:none; font-family:var(--sans); }
+  .mode-btn.active{ background:var(--violet); color:#fff; }
+
+  form{ margin-top:24px; display:flex; flex-direction:column; gap:16px; }
+  .field label{ display:block; font-size:0.82rem; color:var(--text-dim); margin-bottom:7px; }
+  .field input{
+    width:100%; padding:12px 14px; background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    color:var(--text); font-family:var(--sans); font-size:0.94rem; outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input::placeholder{ color:#5A6284; }
+  .field input:focus{ border-color:var(--violet); box-shadow:0 0 0 3px rgba(124,111,240,0.18); }
+
+  .field-row{ display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; }
+  .field-row a{ color:var(--cyan); }
+  .field-row a:hover{ text-decoration:underline; }
+
+  .check-row{ display:flex; align-items:center; gap:9px; font-size:0.85rem; color:var(--text-dim); }
+  .check-row input{ width:16px; height:16px; accent-color:var(--violet); }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    font-family:var(--sans); font-size:0.95rem; font-weight:600;
+    padding:13px 22px; border-radius:9px; border:1px solid transparent;
+    cursor:pointer; transition:transform .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .btn-primary{ background:var(--violet); color:#fff; margin-top:4px; }
+  .btn-primary:hover{ background:var(--violet-d); }
+  .btn-ghost{ background:transparent; color:var(--text); border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--violet); }
+
+  .divider{ display:flex; align-items:center; gap:14px; margin:24px 0 20px; color:var(--text-dim); font-size:0.78rem; font-family:var(--mono); }
+  .divider::before, .divider::after{ content:''; flex:1; height:1px; background:var(--line); }
+
+  .anon-box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px; text-align:center; }
+  .anon-box .alias-preview{ font-family:var(--mono); font-size:0.88rem; color:var(--cyan); margin-top:8px; }
+  .anon-box p{ font-size:0.82rem; color:var(--text-dim); margin-top:6px; }
+
+  .oauth-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  .oauth-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 0; border:1px solid var(--line); border-radius:9px; background:var(--surface);
+    font-size:0.85rem; color:var(--text); cursor:pointer; transition:border-color .15s ease;
+  }
+  .oauth-btn:hover{ border-color:var(--violet); }
+
+  .switch-line{ text-align:center; margin-top:26px; font-size:0.88rem; color:var(--text-dim); }
+  .switch-line a{ color:var(--cyan); font-weight:600; }
+  .switch-line a:hover{ text-decoration:underline; }
+
+  .terms{ text-align:center; margin-top:22px; font-size:0.76rem; color:#5A6284; }
+  .terms a{ color:var(--text-dim); }
+  .terms a:hover{ color:var(--text); }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- LEFT BRAND PANEL -->
+  <aside class="panel">
+    <a href="skillswap.html" class="logo"><span class="mark"></span>SkillSwap</a>
+
+    <div class="panel-copy">
+      <span class="eyebrow">Welcome back</span>
+      <h1>Step back into the <span class="hl">arena.</span></h1>
+      <p>Your alias, your pace. Pick up where you left off and see how far your practice history has come.</p>
+
+      <div class="mini-arena">
+        <div class="mini-ring"></div>
+        <div class="mini-topic">
+          <div class="tlabel">Live now</div>
+          <p>Remote work vs. in-office culture</p>
+        </div>
+        <div class="mini-node" style="top:6%; left:50%; background:var(--violet);">RK</div>
+        <div class="mini-node" style="top:26%; left:87%; background:var(--rose);">AS</div>
+        <div class="mini-node" style="top:74%; left:87%; background:var(--amber);">PN</div>
+        <div class="mini-node" style="top:94%; left:50%; background:var(--cyan);">JM</div>
+        <div class="mini-node" style="top:74%; left:13%; background:#9B8CFF;">TL</div>
+        <div class="mini-node" style="top:26%; left:13%; background:#4FD1C5;">MB</div>
+      </div>
+    </div>
+
+    <p class="panel-quote">"5 skill areas rated per session — a practice history you can actually point to."</p>
+  </aside>
+
+  <!-- RIGHT FORM PANEL -->
+  <section class="form-panel">
+    <div class="form-wrap">
+      <a href="skillswap.html" class="mobile-logo"><span class="mark"></span>SkillSwap</a>
+
+      <h2 id="formTitle">Log in</h2>
+      <p class="sub" id="formSub">Enter the arena with your account or jump in anonymously.</p>
+
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" data-mode="account">Account</button>
+        <button type="button" class="mode-btn" data-mode="anon">Anonymous entry</button>
+      </div>
+
+      <!-- ACCOUNT LOGIN VIEW -->
+      <div class="view active" id="view-account">
+        <form onsubmit="return false;">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@college.edu" required>
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+          </div>
+          <div class="field-row">
+            <label class="check-row"><input type="checkbox"> Stay signed in</label>
+            <a href="#">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary">Log in →</button>
+        </form>
+
+        <div class="divider">OR CONTINUE WITH</div>
+        <div class="oauth-row">
+          <button type="button" class="oauth-btn">Google</button>
+          <button type="button" class="oauth-btn">GitHub</button>
+        </div>
+      </div>
+
+      <!-- ANONYMOUS ENTRY VIEW -->
+      <div class="view" id="view-anon">
+        <div class="anon-box">
+          <span class="eyebrow" style="justify-content:center;">Alias assigned</span>
+          <div class="alias-preview">SilentFalcon_042</div>
+          <p>No name, no camera, no public identity. Your alias resets each session unless you save it below.</p>
+        </div>
+
+        <form onsubmit="return false;" style="margin-top:18px;">
+          <div class="field">
+            <label for="cohort">Cohort or college code (optional)</label>
+            <input type="text" id="cohort" placeholder="e.g. NIT-DELHI-2026">
+          </div>
+          <label class="check-row" style="margin-bottom:4px;">
+            <input type="checkbox"> Save this alias for next time
+          </label>
+          <button type="submit" class="btn btn-primary">Join a live GD →</button>
+        </form>
+      </div>
+
+      <p class="switch-line">New here? <a href="#">Create an account</a></p>
+      <p class="terms">By continuing you agree to SkillSwap's <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const modeBtns = document.querySelectorAll('.mode-btn');
+  const viewAccount = document.getElementById('view-account');
+  const viewAnon = document.getElementById('view-anon');
+  const title = document.getElementById('formTitle');
+  const sub = document.getElementById('formSub');
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      if (mode === 'account'){
+        viewAccount.classList.add('active');
+        viewAnon.classList.remove('active');
+        title.textContent = 'Log in';
+        sub.textContent = 'Enter the arena with your account or jump in anonymously.';
+      } else {
+        viewAnon.classList.add('active');
+        viewAccount.classList.remove('active');
+        title.textContent = 'Join anonymously';
+        sub.textContent = 'Skip the account. Practice with an alias, right now.';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

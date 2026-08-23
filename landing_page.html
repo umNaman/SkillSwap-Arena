@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join a live GD — SkillSwap</title>
+<meta name="description" content="Pick a topic, join with an alias, and step into a live 6-person group discussion arena. No camera, no name, real feedback.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:        #0A0E1A;
+    --surface:   #10152A;
+    --surface-2: #171E3A;
+    --line:      #262E52;
+    --text:      #EDEFF7;
+    --text-dim:  #8891B0;
+
+    --violet:  #7C6FF0;
+    --violet-d:#5B4FD1;
+    --cyan:    #38D9C9;
+    --amber:   #FFC94A;
+    --rose:    #FF6FA8;
+
+    --display: 'Outfit', sans-serif;
+    --sans:    'Inter', system-ui, sans-serif;
+    --mono:    'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; }
+  button{ font:inherit; }
+  .container{ max-width:1160px; margin:0 auto; padding:0 24px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+
+  ::selection{ background:var(--violet); color:#fff; }
+
+  h1,h2,h3{ font-family:var(--display); font-weight:700; letter-spacing:-0.01em; }
+
+  .eyebrow{
+    font-family:var(--mono); font-size:0.74rem; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--cyan); display:inline-flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:6px; height:6px; background:var(--cyan); border-radius:50%; box-shadow:0 0 8px var(--cyan); }
+
+  .section-head{ max-width:640px; margin-bottom:40px; }
+  .section-head h2{ font-size:clamp(1.6rem,3vw,2.1rem); margin-top:14px; }
+  .section-head p{ color:var(--text-dim); margin-top:14px; font-size:1.02rem; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:var(--sans); font-size:0.93rem; font-weight:600;
+    padding:13px 22px; border-radius:9px; border:1px solid transparent;
+    cursor:pointer; transition:transform .15s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn:focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; }
+  .btn-primary{ background:var(--violet); color:#fff; }
+  .btn-primary:hover{ background:var(--violet-d); }
+  .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; transform:none; background:var(--violet); }
+  .btn-ghost{ background:transparent; color:var(--text); border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--violet); }
+  .btn-block{ width:100%; }
+
+  /* header */
+  header{ position:sticky; top:0; z-index:50; background:rgba(10,14,26,0.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  .nav{ display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
+  .logo{ display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:700; font-size:1.15rem; }
+  .logo .mark{ width:24px; height:24px; border-radius:7px; background:linear-gradient(135deg,var(--violet),var(--cyan)); }
+  .nav-links{ display:flex; gap:30px; font-size:0.92rem; color:var(--text-dim); }
+  .nav-links a:hover{ color:var(--text); }
+  .nav-links a.active{ color:var(--text); }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
+  @media (max-width:820px){ .nav-links{ display:none; } }
+
+  /* setup hero */
+  .setup-hero{ padding:64px 0 20px; }
+  .setup-hero h1{ font-size:clamp(1.9rem,3.8vw,2.7rem); margin-top:14px; line-height:1.15; max-width:640px; }
+  .setup-hero p.lead{ color:var(--text-dim); font-size:1.05rem; margin-top:16px; max-width:560px; }
+
+  /* progress rail */
+  .rail{ display:flex; align-items:center; gap:10px; margin-top:34px; flex-wrap:wrap; }
+  .rail-step{ display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:0.78rem; color:var(--text-dim); }
+  .rail-step .dot{ width:22px; height:22px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--text-dim); background:var(--surface); flex-shrink:0; }
+  .rail-step.done .dot{ background:var(--cyan); border-color:var(--cyan); color:#04231f; }
+  .rail-step.active .dot{ background:var(--violet); border-color:var(--violet); color:#fff; }
+  .rail-step.active{ color:var(--text); }
+  .rail-line{ width:28px; height:1px; background:var(--line); }
+
+  /* main setup grid */
+  .setup{ padding:44px 0 100px; }
+  .setup-grid{ display:grid; grid-template-columns:1fr; gap:26px; }
+  @media (min-width:980px){ .setup-grid{ grid-template-columns:1.05fr 0.95fr; align-items:start; } }
+
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:28px; }
+  .panel + .panel{ margin-top:22px; }
+  .panel h3{ font-size:1rem; font-family:var(--sans); font-weight:600; }
+  .panel .sub{ color:var(--text-dim); font-size:0.86rem; margin-top:4px; }
+
+  /* alias field */
+  .field{ margin-top:20px; }
+  .field label{ display:block; font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px; }
+  .alias-row{ display:flex; gap:10px; }
+  .alias-row input{
+    flex:1; background:var(--bg); border:1px solid var(--line); border-radius:9px; padding:12px 14px;
+    color:var(--text); font-family:var(--sans); font-size:0.95rem;
+  }
+  .alias-row input:focus{ outline:none; border-color:var(--violet); }
+  .btn-icon{ width:44px; height:44px; border-radius:9px; border:1px solid var(--line); background:var(--bg); color:var(--text-dim); cursor:pointer; font-size:1rem; flex-shrink:0; }
+  .btn-icon:hover{ border-color:var(--violet); color:var(--text); }
+
+  /* avatar picker */
+  .avatar-picker{ display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .avatar-swatch{
+    width:46px; height:46px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; color:#fff; font-size:0.85rem;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .avatar-swatch:hover{ transform:translateY(-2px); }
+  .avatar-swatch.selected{ border-color:var(--text); box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--cyan); }
+
+  /* mic / cam toggles */
+  .toggle-row{ display:flex; gap:14px; margin-top:20px; flex-wrap:wrap; }
+  .toggle{
+    display:flex; align-items:center; gap:10px; background:var(--bg); border:1px solid var(--line); border-radius:9px;
+    padding:12px 16px; flex:1; min-width:170px; cursor:pointer;
+  }
+  .toggle .ind{ width:10px; height:10px; border-radius:50%; background:var(--text-dim); flex-shrink:0; }
+  .toggle.on .ind{ background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+  .toggle .label{ font-size:0.88rem; }
+  .toggle .state{ margin-left:auto; font-family:var(--mono); font-size:0.7rem; color:var(--text-dim); }
+  .toggle.on .state{ color:var(--cyan); }
+
+  .mic-meter{ display:flex; gap:3px; align-items:flex-end; height:16px; margin-left:10px; }
+  .mic-meter span{ width:3px; background:var(--line); border-radius:2px; height:4px; transition:height .12s ease, background .12s ease; }
+  .toggle.on .mic-meter span{ background:var(--cyan); }
+
+  .privacy-note{ display:flex; gap:10px; margin-top:20px; padding:14px 16px; background:var(--bg); border:1px solid var(--line); border-radius:10px; }
+  .privacy-note .ic{ color:var(--cyan); font-family:var(--mono); font-size:0.9rem; flex-shrink:0; }
+  .privacy-note p{ font-size:0.82rem; color:var(--text-dim); }
+
+  /* session list */
+  .session-list{ display:flex; flex-direction:column; gap:12px; margin-top:20px; }
+  .session{
+    display:flex; align-items:center; gap:16px; background:var(--bg); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .session:hover{ border-color:var(--violet); }
+  .session.selected{ border-color:var(--violet); background:var(--surface-2); }
+  .session-radio{ width:18px; height:18px; border-radius:50%; border:1px solid var(--line); flex-shrink:0; position:relative; }
+  .session.selected .session-radio{ border-color:var(--violet); }
+  .session.selected .session-radio::after{ content:''; position:absolute; inset:3px; border-radius:50%; background:var(--violet); }
+  .session-body{ flex:1; min-width:0; }
+  .session-topic{ font-size:0.92rem; }
+  .session-meta{ display:flex; gap:14px; margin-top:6px; flex-wrap:wrap; }
+  .session-meta span{ font-family:var(--mono); font-size:0.7rem; color:var(--text-dim); }
+  .session-meta .seats-full{ color:var(--rose); }
+  .session-meta .seats-open{ color:var(--cyan); }
+  .session-avatars{ display:flex; flex-shrink:0; }
+  .session-avatars .mini{
+    width:24px; height:24px; border-radius:50%; border:2px solid var(--bg); margin-left:-8px;
+    display:flex; align-items:center; justify-content:center; font-size:0.55rem; font-family:var(--display); font-weight:700; color:#fff;
+  }
+  .session-avatars .mini:first-child{ margin-left:0; }
+  .session-avatars .mini.empty{ background:var(--surface-2); border-style:dashed; border-color:var(--line); }
+
+  /* live pulse tag */
+  .live-tag{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:0.66rem; color:var(--rose); text-transform:uppercase; letter-spacing:0.06em; }
+  .live-tag::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--rose); animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.25; } }
+
+  /* summary / sticky join panel */
+  .summary{ position:sticky; top:96px; }
+  .summary-row{ display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); font-size:0.88rem; }
+  .summary-row:last-of-type{ border-bottom:none; }
+  .summary-row .k{ color:var(--text-dim); }
+  .summary-row .v{ text-align:right; }
+  .summary-row .v.muted{ color:var(--text-dim); font-family:var(--mono); font-size:0.8rem; }
+
+  .rules{ margin-top:18px; }
+  .rules li{ font-size:0.83rem; color:var(--text-dim); padding:5px 0; display:flex; gap:9px; }
+  .rules li::before{ content:'—'; color:var(--violet); flex-shrink:0; }
+
+  .join-cta{ margin-top:22px; }
+  .join-hint{ text-align:center; font-family:var(--mono); font-size:0.72rem; color:var(--text-dim); margin-top:12px; }
+
+  /* waiting room state */
+  .waiting-wrap{ display:none; padding:100px 0; }
+  .waiting-wrap.active{ display:block; }
+  .waiting-inner{ max-width:520px; margin:0 auto; text-align:center; }
+  .waiting-arena{
+    position:relative; aspect-ratio:1/1; width:100%; max-width:340px; margin:36px auto 0;
+    background:radial-gradient(circle at center, var(--surface-2) 0%, var(--surface) 70%);
+    border-radius:50%; border:1px solid var(--line);
+  }
+  .waiting-ring{ position:absolute; inset:10%; border:1px dashed var(--line); border-radius:50%; }
+  .waiting-center{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;
+    font-family:var(--mono); font-size:0.72rem; color:var(--text-dim);
+  }
+  .waiting-center strong{ display:block; font-family:var(--display); font-size:1.6rem; color:var(--cyan); font-weight:700; }
+  .wnode{ position:absolute; width:56px; transform:translate(-50%,-50%); text-align:center; opacity:0; transition:opacity .4s ease; }
+  .wnode.in{ opacity:1; }
+  .wnode .circle{ width:40px; height:40px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center; font-family:var(--display); font-weight:700; font-size:0.78rem; color:#fff; box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--line); }
+  .wnode .name{ font-family:var(--mono); font-size:0.6rem; color:var(--text-dim); margin-top:6px; }
+  .wnode.you .circle{ box-shadow:0 0 0 3px var(--bg), 0 0 0 4px var(--cyan); }
+
+  .waiting-status{ margin-top:30px; font-size:0.95rem; color:var(--text-dim); }
+  .waiting-status b{ color:var(--text); }
+  .waiting-actions{ display:flex; gap:14px; justify-content:center; margin-top:26px; flex-wrap:wrap; }
+
+  footer{ padding:44px 0 32px; border-top:1px solid var(--line); }
+  .foot-grid{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:28px; }
+  .foot-links{ display:flex; gap:26px; font-size:0.88rem; color:var(--text-dim); flex-wrap:wrap; }
+  .foot-links a:hover{ color:var(--text); }
+  .foot-bottom{ margin-top:32px; padding-top:22px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-family:var(--mono); font-size:0.76rem; color:var(--text-dim); }
+
+  .reveal{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="#" class="logo"><span class="mark"></span>SkillSwap</a>
+    <nav class="nav-links">
+      <a href="#">How it works</a>
+      <a href="#">Skill areas</a>
+      <a href="#">Beyond GD</a>
+      <a href="#">Impact</a>
+    </nav>
+    <div class="nav-right">
+      <a href="#" class="btn btn-ghost">Log in</a>
+      <a href="#" class="btn btn-primary active">Join the arena</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SETUP HERO -->
+  <section class="setup-hero">
+    <div class="container">
+      <span class="eyebrow">Join a live GD</span>
+      <h1>Pick a topic, set an alias, <span style="color:var(--cyan);">step into the arena.</span></h1>
+      <p class="lead">You're three steps from a live round: choose a session, get your mic and alias sorted, then wait for five more peers to fill the ring.</p>
+
+      <div class="rail">
+        <div class="rail-step active" data-rail="1"><span class="dot">1</span>Choose a session</div>
+        <div class="rail-line"></div>
+        <div class="rail-step" data-rail="2"><span class="dot">2</span>Set up your identity</div>
+        <div class="rail-line"></div>
+        <div class="rail-step" data-rail="3"><span class="dot">3</span>Enter the arena</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP FORM -->
+  <div class="waiting-wrap" id="setupWrap" style="display:block;">
+  <section class="setup">
+    <div class="container setup-grid">
+
+      <!-- LEFT: sessions + identity -->
+      <div>
+        <div class="panel reveal">
+          <h3>Open sessions</h3>
+          <p class="sub">Every seat holds one alias. Pick a topic and a seat count you're comfortable with.</p>
+
+          <div class="session-list" id="sessionList">
+            <div class="session selected" data-topic="Should AI-generated work require a disclosure label?" data-seats="4" data-cap="6">
+              <div class="session-radio"></div>
+              <div class="session-body">
+                <div class="session-topic">Should AI-generated work require a disclosure label?</div>
+                <div class="session-meta">
+                  <span class="live-tag">Filling</span>
+                  <span class="seats-open">4/6 seats</span>
+                  <span>Starts in 3:12</span>
+                </div>
+              </div>
+              <div class="session-avatars">
+                <div class="mini" style="background:var(--violet);">RK</div>
+                <div class="mini" style="background:var(--rose);">AS</div>
+                <div class="mini" style="background:var(--amber);">PN</div>
+                <div class="mini" style="background:#4FD1C5;">MB</div>
+                <div class="mini empty"></div>
+                <div class="mini empty"></div>
+              </div>
+            </div>
+
+            <div class="session" data-topic="Is remote-first hiring good for entry-level candidates?" data-seats="2" data-cap="6">
+              <div class="session-radio"></div>
+              <div class="session-body">
+                <div class="session-topic">Is remote-first hiring good for entry-level candidates?</div>
+                <div class="session-meta">
+                  <span class="live-tag">Filling</span>
+                  <span class="seats-open">2/6 seats</span>
+                  <span>Starts in 7:40</span>
+                </div>
+              </div>
+              <div class="session-avatars">
+                <div class="mini" style="background:var(--cyan);">JM</div>
+                <div class="mini" style="background:#9B8CFF;">TL</div>
+                <div class="mini empty"></div>
+                <div class="mini empty"></div>
+                <div class="mini empty"></div>
+                <div class="mini empty"></div>
+              </div>
+            </div>
+
+            <div class="session" data-topic="Discuss the impact of AI on entry-level job roles." data-seats="6" data-cap="6">
+              <div class="session-radio"></div>
+              <div class="session-body">
+                <div class="session-topic">Discuss the impact of AI on entry-level job roles.</div>
+                <div class="session-meta">
+                  <span style="color:var(--text-dim); font-family:var(--mono); font-size:0.7rem;">● In progress</span>
+                  <span class="seats-full">6/6 seats</span>
+                  <span>Next round in 9:05</span>
+                </div>
+              </div>
+              <div class="session-avatars">
+                <div class="mini" style="background:var(--violet);">RK</div>
+                <div class="mini" style="background:var(--rose);">AS</div>
+                <div class="mini" style="background:var(--amber);">PN</div>
+                <div class="mini" style="background:var(--cyan);">JM</div>
+                <div class="mini" style="background:#9B8CFF;">TL</div>
+                <div class="mini" style="background:#4FD1C5;">MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel reveal">
+          <h3>Your identity in the arena</h3>
+          <p class="sub">No name, no camera required. This is what the other five will see.</p>
+
+          <div class="field">
+            <label for="aliasInput">Alias</label>
+            <div class="alias-row">
+              <input type="text" id="aliasInput" maxlength="14" value="QuietStorm42" placeholder="Pick an alias">
+              <button class="btn-icon" id="shuffleAlias" title="Shuffle alias">⟳</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Avatar color</label>
+            <div class="avatar-picker" id="avatarPicker">
+              <div class="avatar-swatch selected" style="background:var(--violet);" data-color="var(--violet)">Q</div>
+              <div class="avatar-swatch" style="background:var(--cyan);" data-color="var(--cyan)">Q</div>
+              <div class="avatar-swatch" style="background:var(--rose);" data-color="var(--rose)">Q</div>
+              <div class="avatar-swatch" style="background:var(--amber);" data-color="var(--amber)">Q</div>
+              <div class="avatar-swatch" style="background:#4FD1C5;" data-color="#4FD1C5">Q</div>
+              <div class="avatar-swatch" style="background:#9B8CFF;" data-color="#9B8CFF">Q</div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mic &amp; camera</label>
+            <div class="toggle-row">
+              <div class="toggle on" id="micToggle">
+                <span class="ind"></span>
+                <span class="label">Microphone</span>
+                <span class="mic-meter" id="micMeter">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </span>
+                <span class="state">On</span>
+              </div>
+              <div class="toggle" id="camToggle">
+                <span class="ind"></span>
+                <span class="label">Camera</span>
+                <span class="state">Off</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="privacy-note">
+            <span class="ic">◇</span>
+            <p>Your alias and avatar are all the room sees — no real name or camera is ever required to take part.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: summary / join -->
+      <div class="summary">
+        <div class="panel reveal">
+          <h3>Ready to join</h3>
+          <p class="sub">Confirm the details, then take your seat.</p>
+
+          <div style="margin-top:18px;">
+            <div class="summary-row"><span class="k">Topic</span><span class="v" id="sumTopic">Should AI-generated work require a disclosure label?</span></div>
+            <div class="summary-row"><span class="k">Seats filled</span><span class="v" id="sumSeats">4 / 6</span></div>
+            <div class="summary-row"><span class="k">Starts</span><span class="v muted" id="sumStart">in 3:12</span></div>
+            <div class="summary-row"><span class="k">Joining as</span><span class="v" id="sumAlias">QuietStorm42</span></div>
+            <div class="summary-row"><span class="k">Mic</span><span class="v muted" id="sumMic">On</span></div>
+          </div>
+
+          <ul class="rules">
+            <li>Round runs a fixed 15 minutes, then feedback opens</li>
+            <li>Everyone rates everyone across 5 skill areas</li>
+            <li>Leaving mid-round skips your peer ratings</li>
+          </ul>
+
+          <div class="join-cta">
+            <button class="btn btn-primary btn-block" id="joinBtn">Join a live GD →</button>
+            <p class="join-hint">Free for students · takes under 15 minutes</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+  </div>
+
+  <!-- WAITING ROOM -->
+  <div class="waiting-wrap" id="waitingWrap">
+    <section>
+      <div class="container waiting-inner">
+        <span class="eyebrow">Seat confirmed</span>
+        <h2 style="font-size:clamp(1.5rem,3vw,2rem); margin-top:14px;">You're in the ring as <span style="color:var(--cyan);" id="waitAlias">QuietStorm42</span></h2>
+        <p style="color:var(--text-dim); margin-top:12px;">Hang tight while the last seats fill. The round starts the moment all six are in.</p>
+
+        <div class="waiting-arena">
+          <div class="waiting-ring"></div>
+          <div class="waiting-center">
+            Seats filled
+            <strong id="seatCount">4/6</strong>
+          </div>
+
+          <div class="wnode in" style="top:6%; left:50%;">
+            <div class="circle" style="background:var(--violet);">RK</div>
+            <div class="name">Communication</div>
+          </div>
+          <div class="wnode in" style="top:24%; left:88%;">
+            <div class="circle" style="background:var(--rose);">AS</div>
+            <div class="name">Relevance</div>
+          </div>
+          <div class="wnode in" style="top:76%; left:88%;">
+            <div class="circle" style="background:var(--amber);">PN</div>
+            <div class="name">Participation</div>
+          </div>
+          <div class="wnode in" style="top:94%; left:50%;">
+            <div class="circle" style="background:#4FD1C5;">MB</div>
+            <div class="name">Confidence</div>
+          </div>
+          <div class="wnode you" id="youNode" style="top:76%; left:12%;">
+            <div class="circle" style="background:var(--violet);">Q</div>
+            <div class="name">You</div>
+          </div>
+          <div class="wnode" id="lastNode" style="top:24%; left:12%;">
+            <div class="circle" style="background:var(--line); color:var(--text-dim);">?</div>
+            <div class="name">Waiting…</div>
+          </div>
+        </div>
+
+        <p class="waiting-status" id="waitingStatus">Waiting on <b>2 more peers</b> to fill the ring.</p>
+
+        <div class="waiting-actions">
+          <button class="btn btn-ghost" id="leaveBtn">Leave queue</button>
+          <button class="btn btn-primary" id="enterBtn" disabled>Enter arena →</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <a href="#" class="logo"><span class="mark"></span>SkillSwap</a>
+      <nav class="foot-links">
+        <a href="#">How it works</a>
+        <a href="#">Skill areas</a>
+        <a href="#">Beyond GD</a>
+        <a href="#">Impact</a>
+      </nav>
+    </div>
+    <div class="foot-bottom">
+      <span>Built by Code Crew for Smart India Hackathon 2026</span>
+      <span>PS ID SIH25140 · Theme: Smart Education</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // session selection
+  const sessions = document.querySelectorAll('.session');
+  const sumTopic = document.getElementById('sumTopic');
+  const sumSeats = document.getElementById('sumSeats');
+  const sumStart = document.getElementById('sumStart');
+  const joinBtn = document.getElementById('joinBtn');
+
+  function selectSession(el){
+    sessions.forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    const topic = el.dataset.topic;
+    const seats = el.dataset.seats;
+    const cap = el.dataset.cap;
+    sumTopic.textContent = topic;
+    sumSeats.textContent = `${seats} / ${cap}`;
+    const startText = el.querySelector('.session-meta span:last-child').textContent;
+    sumStart.textContent = startText.replace('Starts ', '').replace('Next round ', '');
+    const full = seats === cap;
+    joinBtn.textContent = full ? 'Watch this round →' : 'Join a live GD →';
+  }
+  sessions.forEach(s => s.addEventListener('click', () => selectSession(s)));
+
+  // alias
+  const aliasInput = document.getElementById('aliasInput');
+  const sumAlias = document.getElementById('sumAlias');
+  const waitAlias = document.getElementById('waitAlias');
+  const youNode = document.getElementById('youNode');
+
+  const adjectives = ['Quiet','Bold','Calm','Swift','Bright','Sharp','Wry','Keen'];
+  const nouns = ['Storm','Falcon','Ember','Harbor','Compass','Signal','Echo','Anchor'];
+  function randomAlias(){
+    const a = adjectives[Math.floor(Math.random()*adjectives.length)];
+    const n = nouns[Math.floor(Math.random()*nouns.length)];
+    const num = Math.floor(Math.random()*90)+10;
+    return `${a}${n}${num}`;
+  }
+  function syncAlias(){
+    const val = aliasInput.value.trim() || 'Anonymous';
+    sumAlias.textContent = val;
+    waitAlias.textContent = val;
+    const initial = val.charAt(0).toUpperCase();
+    youNode.querySelector('.circle').textContent = initial;
+    document.querySelectorAll('.avatar-swatch').forEach(s => s.textContent = initial);
+  }
+  aliasInput.addEventListener('input', syncAlias);
+  document.getElementById('shuffleAlias').addEventListener('click', () => {
+    aliasInput.value = randomAlias();
+    syncAlias();
+  });
+  syncAlias();
+
+  // avatar color
+  const swatches = document.querySelectorAll('.avatar-swatch');
+  swatches.forEach(sw => sw.addEventListener('click', () => {
+    swatches.forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    const color = sw.dataset.color;
+    youNode.querySelector('.circle').style.background = color;
+  }));
+
+  // mic / cam toggles
+  const micToggle = document.getElementById('micToggle');
+  const camToggle = document.getElementById('camToggle');
+  const sumMic = document.getElementById('sumMic');
+  let micLevel;
+
+  function animateMic(){
+    if (!micToggle.classList.contains('on')) return;
+    const bars = document.querySelectorAll('#micMeter span');
+    bars.forEach(b => b.style.height = (4 + Math.random()*12) + 'px');
+  }
+  micLevel = setInterval(animateMic, 260);
+
+  function toggleControl(el, stateEl, onLabel, offLabel){
+    el.classList.toggle('on');
+    const isOn = el.classList.contains('on');
+    stateEl.textContent = isOn ? onLabel : offLabel;
+    return isOn;
+  }
+  micToggle.addEventListener('click', () => {
+    const isOn = toggleControl(micToggle, micToggle.querySelector('.state'), 'On', 'Off');
+    sumMic.textContent = isOn ? 'On' : 'Off';
+    if (!isOn){
+      document.querySelectorAll('#micMeter span').forEach(b => b.style.height = '4px');
+    }
+  });
+  camToggle.addEventListener('click', () => {
+    toggleControl(camToggle, camToggle.querySelector('.state'), 'On', 'Off');
+  });
+
+  // join flow -> waiting room
+  const setupWrap = document.getElementById('setupWrap');
+  const waitingWrap = document.getElementById('waitingWrap');
+  const rail = document.querySelectorAll('.rail-step');
+  const seatCount = document.getElementById('seatCount');
+  const lastNode = document.getElementById('lastNode');
+  const waitingStatus = document.getElementById('waitingStatus');
+  const enterBtn = document.getElementById('enterBtn');
+  const leaveBtn = document.getElementById('leaveBtn');
+
+  joinBtn.addEventListener('click', () => {
+    setupWrap.style.display = 'none';
+    waitingWrap.classList.add('active');
+    rail[0].classList.remove('active'); rail[0].classList.add('done'); rail[0].querySelector('.dot').textContent = '✓';
+    rail[1].classList.add('done'); rail[1].querySelector('.dot').textContent = '✓';
+    rail[2].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // simulate the last seat filling after a short wait
+    setTimeout(() => {
+      lastNode.classList.add('in');
+      lastNode.querySelector('.circle').style.background = 'var(--cyan)';
+      lastNode.querySelector('.circle').style.color = '#fff';
+      lastNode.querySelector('.circle').textContent = 'TL';
+      lastNode.querySelector('.name').textContent = 'Leadership';
+      seatCount.textContent = '6/6';
+      waitingStatus.innerHTML = 'All six seats are filled — <b>starting now.</b>';
+      enterBtn.disabled = false;
+    }, 3200);
+  });
+
+  leaveBtn.addEventListener('click', () => {
+    waitingWrap.classList.remove('active');
+    setupWrap.style.display = 'block';
+    rail[0].classList.add('active'); rail[0].classList.remove('done'); rail[0].querySelector('.dot').textContent = '1';
+    rail[1].classList.remove('done');
+    rail[2].classList.remove('active');
+    lastNode.classList.remove('in');
+    seatCount.textContent = '4/6';
+    waitingStatus.innerHTML = 'Waiting on <b>2 more peers</b> to fill the ring.';
+    enterBtn.disabled = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  enterBtn.addEventListener('click', () => {
+    enterBtn.textContent = 'Entering…';
+    enterBtn.disabled = true;
+  });
+</script>
+
+</body>
+</html>
