@@ -356,10 +356,10 @@
           <div class="field">
             <label>Avatar color</label>
             <div class="avatar-picker" id="avatarPicker">
-              <div class="avatar-swatch selected" style="background:var(--violet);" data-color="var(--violet)">Q</div>
-              <div class="avatar-swatch" style="background:var(--cyan);" data-color="var(--cyan)">Q</div>
-              <div class="avatar-swatch" style="background:var(--rose);" data-color="var(--rose)">Q</div>
-              <div class="avatar-swatch" style="background:var(--amber);" data-color="var(--amber)">Q</div>
+              <div class="avatar-swatch selected" style="background:var(--violet);" data-color="#7C6FF0">Q</div>
+              <div class="avatar-swatch" style="background:var(--cyan);" data-color="#38D9C9">Q</div>
+              <div class="avatar-swatch" style="background:var(--rose);" data-color="#FF6FA8">Q</div>
+              <div class="avatar-swatch" style="background:var(--amber);" data-color="#FFC94A">Q</div>
               <div class="avatar-swatch" style="background:#4FD1C5;" data-color="#4FD1C5">Q</div>
               <div class="avatar-swatch" style="background:#9B8CFF;" data-color="#9B8CFF">Q</div>
             </div>
@@ -413,7 +413,7 @@
 
           <div class="join-cta">
             <button class="btn btn-primary btn-block" id="joinBtn">Join a live GD →</button>
-            <p class="join-hint">Free for students · takes under 15 minutes</p>
+            <p class="join-hint" id="setupStatus">Free for students · takes under 15 minutes</p>
           </div>
         </div>
       </div>
@@ -460,24 +460,6 @@
           <div class="wnode" id="lastNode" style="top:24%; left:12%;">
             <div class="circle" style="background:var(--line); color:var(--text-dim);">?</div>
             <div class="name">Waiting…</div>
-            <!-- LIVE ARENA -->
-<div class="waiting-wrap" id="arenaWrap" style="display:none; padding: 60px 0;">
-  <div class="container">
-    <div class="section-head reveal in" style="margin: 0 auto 30px; text-align: center;">
-      <span class="eyebrow">Live Session</span>
-      <h2>Group Discussion Arena</h2>
-      <div class="timer" id="sessionTimer" style="font-family: var(--mono); color: var(--cyan); margin-top: 10px; font-size: 1.2rem;">⏱ 15:00 remaining</div>
-    </div>
-    
-    <div style="text-align: center; margin-bottom: 30px;">
-      <button id="leaveArenaBtn" class="btn btn-ghost" style="border-color: var(--rose); color: var(--rose);">Leave Arena</button>
-    </div>
-
-    <!-- Video Grid -->
-    <div id="video-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-height: 400px;">
-    </div>
-  </div>
-</div>
           </div>
         </div>
 
@@ -489,6 +471,26 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- LIVE ARENA -->
+  <div class="waiting-wrap" id="arenaWrap" style="display:none; padding: 60px 0;">
+    <div class="container">
+      <div class="section-head reveal in" style="margin: 0 auto 30px; text-align: center;">
+        <span class="eyebrow">Live Session</span>
+        <h2>Group Discussion Arena</h2>
+        <div class="timer" id="sessionTimer" style="font-family: var(--mono); color: var(--cyan); margin-top: 10px; font-size: 1.2rem;">⏱ 15:00 remaining</div>
+        <p id="callStatus" role="status" style="color:var(--text-dim); margin-top:10px;">Ready to connect.</p>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-bottom:30px; flex-wrap:wrap;">
+        <button id="muteArenaBtn" class="btn btn-ghost" disabled>Mute microphone</button>
+        <button id="resumeAudioBtn" class="btn btn-ghost" style="display:none; border-color:var(--amber); color:var(--amber);">Resume audio</button>
+        <button id="leaveArenaBtn" class="btn btn-ghost" style="border-color:var(--rose); color:var(--rose);">Leave Arena</button>
+      </div>
+
+      <div id="video-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; min-height:240px;"></div>
+    </div>
   </div>
 
 </main>
@@ -512,52 +514,75 @@
 </footer>
 
 <script>
-  // reveal on scroll
-  const revealEls = document.querySelectorAll('.reveal');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el => io.observe(el));
-
-  // session selection
-  const sessions = document.querySelectorAll('.session');
+  const API_BASE = window.location.origin;
+  const setupWrap = document.getElementById('setupWrap');
+  const waitingWrap = document.getElementById('waitingWrap');
+  const arenaWrap = document.getElementById('arenaWrap');
+  const sessionList = document.getElementById('sessionList');
   const sumTopic = document.getElementById('sumTopic');
   const sumSeats = document.getElementById('sumSeats');
   const sumStart = document.getElementById('sumStart');
-  const joinBtn = document.getElementById('joinBtn');
-
-  function selectSession(el){
-    sessions.forEach(s => s.classList.remove('selected'));
-    el.classList.add('selected');
-    const topic = el.dataset.topic;
-    const seats = el.dataset.seats;
-    const cap = el.dataset.cap;
-    sumTopic.textContent = topic;
-    sumSeats.textContent = `${seats} / ${cap}`;
-    const startText = el.querySelector('.session-meta span:last-child').textContent;
-    sumStart.textContent = startText.replace('Starts ', '').replace('Next round ', '');
-    const full = seats === cap;
-    joinBtn.textContent = full ? 'Watch this round →' : 'Join a live GD →';
-  }
-  sessions.forEach(s => s.addEventListener('click', () => selectSession(s)));
-
-  // alias
-  const aliasInput = document.getElementById('aliasInput');
   const sumAlias = document.getElementById('sumAlias');
+  const sumMic = document.getElementById('sumMic');
+  const joinBtn = document.getElementById('joinBtn');
+  const setupStatus = document.getElementById('setupStatus');
+  const aliasInput = document.getElementById('aliasInput');
   const waitAlias = document.getElementById('waitAlias');
   const youNode = document.getElementById('youNode');
+  const micToggle = document.getElementById('micToggle');
+  const camToggle = document.getElementById('camToggle');
+  const swatches = document.querySelectorAll('.avatar-swatch');
+  const rail = document.querySelectorAll('.rail-step');
+  const seatCount = document.getElementById('seatCount');
+  const waitingStatus = document.getElementById('waitingStatus');
+  const enterBtn = document.getElementById('enterBtn');
+  const leaveBtn = document.getElementById('leaveBtn');
+  const muteArenaBtn = document.getElementById('muteArenaBtn');
+  const resumeAudioBtn = document.getElementById('resumeAudioBtn');
+  const leaveArenaBtn = document.getElementById('leaveArenaBtn');
+  const callStatus = document.getElementById('callStatus');
+  const videoGrid = document.getElementById('video-grid');
+  const sessionTimerDisplay = document.getElementById('sessionTimer');
+
+  let selectedSession = null;
+  let joinedParticipant = null;
+  let sessionSocket = null;
+  let rtcClient = null;
+  let localAudioTrack = null;
+  let localVideoTrack = null;
+  let audioPublished = false;
+  let isMicMuted = false;
+  let isInArena = false;
+  let isLeaving = false;
+  let sessionTimerInterval = null;
+  const remoteUsers = new Map();
+  const arenaParticipantsByUid = new Map();
+  const arenaParticipantsById = new Map();
+
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(element => io.observe(element));
 
   const adjectives = ['Quiet','Bold','Calm','Swift','Bright','Sharp','Wry','Keen'];
   const nouns = ['Storm','Falcon','Ember','Harbor','Compass','Signal','Echo','Anchor'];
-  function randomAlias(){
-    const a = adjectives[Math.floor(Math.random()*adjectives.length)];
-    const n = nouns[Math.floor(Math.random()*nouns.length)];
-    const num = Math.floor(Math.random()*90)+10;
-    return `${a}${n}${num}`;
+  function randomAlias() {
+    while (true) {
+      const a = adjectives[Math.floor(Math.random()*adjectives.length)];
+      const n = nouns[Math.floor(Math.random()*nouns.length)];
+      const num = Math.floor(Math.random()*90)+10;
+      const alias = `${a}${n}${num}`;
+      if (alias.length <= 14) return alias;
+    }
   }
-  function syncAlias(){
+
+  function syncAlias() {
     const val = aliasInput.value.trim() || 'Anonymous';
     sumAlias.textContent = val;
     waitAlias.textContent = val;
@@ -565,45 +590,159 @@
     youNode.querySelector('.circle').textContent = initial;
     document.querySelectorAll('.avatar-swatch').forEach(s => s.textContent = initial);
   }
+
+  function selectedAvatarColor() {
+    return document.querySelector('.avatar-swatch.selected')?.dataset.color || '#7C6FF0';
+  }
+
+  function toggleControl(element, stateElement, onLabel, offLabel) {
+    element.classList.toggle('on');
+    const isOn = element.classList.contains('on');
+    stateElement.textContent = isOn ? onLabel : offLabel;
+    return isOn;
+  }
+
+  function formatStarts(seconds) {
+    if (seconds <= 0) return 'now';
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+    return `in ${minutes}:${String(remainder).padStart(2, '0')}`;
+  }
+
+  function setFlowStatus(message, isError = false) {
+    setupStatus.textContent = message;
+    setupStatus.style.color = isError ? 'var(--rose)' : '';
+    waitingStatus.textContent = message;
+    waitingStatus.style.color = isError ? 'var(--rose)' : '';
+    callStatus.textContent = message;
+    callStatus.style.color = isError ? 'var(--rose)' : 'var(--text-dim)';
+  }
+
+  async function apiRequest(path, options = {}) {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+    });
+    let body = null;
+    try {
+      body = await response.json();
+    } catch (_) {
+      body = null;
+    }
+    if (!response.ok) {
+      const detail = Array.isArray(body?.detail)
+        ? body.detail.map(item => item.msg).join('; ')
+        : body?.detail;
+      throw new Error(detail || `Request failed with status ${response.status}`);
+    }
+    return body;
+  }
+
+  function renderSession(session) {
+    const element = document.createElement('div');
+    element.className = 'session';
+    element.dataset.sessionId = session.id;
+    element.innerHTML = `
+      <div class="session-radio"></div>
+      <div class="session-body">
+        <div class="session-topic"></div>
+        <div class="session-meta">
+          <span class="session-state"></span>
+          <span class="session-seats"></span>
+          <span class="session-start"></span>
+        </div>
+      </div>
+      <div class="session-avatars"></div>
+    `;
+    element.querySelector('.session-topic').textContent = session.topic;
+    element.querySelector('.session-state').textContent = session.status === 'in_progress' ? '● In progress' : '● Filling';
+    const seats = element.querySelector('.session-seats');
+    seats.textContent = `${session.occupied_seats}/${session.capacity} seats`;
+    seats.className = session.occupied_seats >= session.capacity ? 'session-seats seats-full' : 'session-seats seats-open';
+    element.querySelector('.session-start').textContent = formatStarts(session.starts_in_seconds);
+    const avatars = element.querySelector('.session-avatars');
+    session.participants.slice(0, session.capacity).forEach(participant => {
+      const avatar = document.createElement('div');
+      avatar.className = 'mini';
+      avatar.style.background = participant.avatar_color;
+      avatar.textContent = participant.alias.slice(0, 2).toUpperCase();
+      avatars.appendChild(avatar);
+    });
+    for (let index = session.participants.length; index < session.capacity; index += 1) {
+      const empty = document.createElement('div');
+      empty.className = 'mini empty';
+      avatars.appendChild(empty);
+    }
+    element.addEventListener('click', () => selectSession(element, session));
+    return element;
+  }
+
+  function selectSession(element, session) {
+    document.querySelectorAll('.session').forEach(item => item.classList.remove('selected'));
+    element.classList.add('selected');
+    selectedSession = session;
+    sumTopic.textContent = session.topic;
+    sumSeats.textContent = `${session.occupied_seats} / ${session.capacity}`;
+    sumStart.textContent = formatStarts(session.starts_in_seconds);
+    const canJoin = session.status === 'filling' && session.occupied_seats < session.capacity;
+    joinBtn.disabled = !canJoin;
+    joinBtn.textContent = canJoin ? 'Join a live GD →' : 'Session unavailable';
+  }
+
+  async function loadSessions() {
+    joinBtn.disabled = true;
+    try {
+      const data = await apiRequest('/api/sessions/');
+      sessionList.innerHTML = '';
+      if (!data.sessions.length) {
+        setFlowStatus('No open GD sessions are available.', true);
+        return;
+      }
+      data.sessions.forEach(session => sessionList.appendChild(renderSession(session)));
+      const firstJoinable = data.sessions.find(session => session.status === 'filling' && session.occupied_seats < session.capacity);
+      const session = firstJoinable || data.sessions[0];
+      const element = sessionList.querySelector(`[data-session-id="${session.id}"]`);
+      selectSession(element, session);
+    } catch (error) {
+      sessionList.textContent = 'Unable to load sessions. Start the FastAPI server and refresh this page.';
+      setFlowStatus(error.message, true);
+    }
+  }
+
   aliasInput.addEventListener('input', syncAlias);
   document.getElementById('shuffleAlias').addEventListener('click', () => {
     aliasInput.value = randomAlias();
     syncAlias();
   });
+  aliasInput.value = randomAlias();
   syncAlias();
 
-  // avatar color
-  const swatches = document.querySelectorAll('.avatar-swatch');
-  swatches.forEach(sw => sw.addEventListener('click', () => {
-    swatches.forEach(s => s.classList.remove('selected'));
-    sw.classList.add('selected');
-    const color = sw.dataset.color;
+  swatches.forEach(swatch => swatch.addEventListener('click', () => {
+    swatches.forEach(item => item.classList.remove('selected'));
+    swatch.classList.add('selected');
+    const color = swatch.dataset.color;
     youNode.querySelector('.circle').style.background = color;
   }));
 
-  // mic / cam toggles
-  const micToggle = document.getElementById('micToggle');
-  const camToggle = document.getElementById('camToggle');
-  const sumMic = document.getElementById('sumMic');
-  let micLevel;
-
-  function animateMic(){
-    if (!micToggle.classList.contains('on')) return;
+  function updateLocalMicMeter() {
     const bars = document.querySelectorAll('#micMeter span');
-    bars.forEach(b => b.style.height = (4 + Math.random()*12) + 'px');
+    const level = localAudioTrack && !isMicMuted
+      ? Math.min(1, localAudioTrack.getVolumeLevel())
+      : 0;
+    bars.forEach((bar, index) => {
+      const weightedLevel = Math.max(0, level - index * 0.025);
+      bar.style.height = `${4 + weightedLevel * 12}px`;
+    });
   }
-  micLevel = setInterval(animateMic, 260);
+  setInterval(updateLocalMicMeter, 200);
 
-  function toggleControl(el, stateEl, onLabel, offLabel){
-    el.classList.toggle('on');
-    const isOn = el.classList.contains('on');
-    stateEl.textContent = isOn ? onLabel : offLabel;
-    return isOn;
-  }
   micToggle.addEventListener('click', () => {
     const isOn = toggleControl(micToggle, micToggle.querySelector('.state'), 'On', 'Off');
     sumMic.textContent = isOn ? 'On' : 'Off';
-    if (!isOn){
+    if (!isOn) {
       document.querySelectorAll('#micMeter span').forEach(b => b.style.height = '4px');
     }
   });
@@ -611,161 +750,404 @@
     toggleControl(camToggle, camToggle.querySelector('.state'), 'On', 'Off');
   });
 
-  // join flow -> waiting room
-  const setupWrap = document.getElementById('setupWrap');
-  const waitingWrap = document.getElementById('waitingWrap');
-  const rail = document.querySelectorAll('.rail-step');
-  const seatCount = document.getElementById('seatCount');
-  const lastNode = document.getElementById('lastNode');
-  const waitingStatus = document.getElementById('waitingStatus');
-  const enterBtn = document.getElementById('enterBtn');
-  const leaveBtn = document.getElementById('leaveBtn');
-
-  joinBtn.addEventListener('click', () => {
-    setupWrap.style.display = 'none';
-    waitingWrap.classList.add('active');
-    rail[0].classList.remove('active'); rail[0].classList.add('done'); rail[0].querySelector('.dot').textContent = '✓';
-    rail[1].classList.add('done'); rail[1].querySelector('.dot').textContent = '✓';
-    rail[2].classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // simulate the last seat filling after a short wait
-    setTimeout(() => {
-      lastNode.classList.add('in');
-      lastNode.querySelector('.circle').style.background = 'var(--cyan)';
-      lastNode.querySelector('.circle').style.color = '#fff';
-      lastNode.querySelector('.circle').textContent = 'TL';
-      lastNode.querySelector('.name').textContent = 'Leadership';
-      seatCount.textContent = '6/6';
-      waitingStatus.innerHTML = 'All six seats are filled — <b>starting now.</b>';
+  async function joinSelectedSession() {
+    if (!selectedSession || joinedParticipant) return;
+    joinBtn.disabled = true;
+    joinBtn.textContent = 'Joining…';
+    try {
+      joinedParticipant = await apiRequest(`/api/sessions/${selectedSession.id}/join`, {
+        method: 'POST',
+        body: JSON.stringify({
+          alias: aliasInput.value.trim(),
+          avatar_color: selectedAvatarColor(),
+          mic_enabled: micToggle.classList.contains('on'),
+          cam_enabled: camToggle.classList.contains('on'),
+        }),
+      });
+      selectedSession = await apiRequest(`/api/sessions/${selectedSession.id}`);
+      await openSessionSocket();
+      setupWrap.style.display = 'none';
+      waitingWrap.classList.add('active');
+      rail[0].classList.remove('active');
+      rail[0].classList.add('done');
+      rail[0].querySelector('.dot').textContent = '✓';
+      rail[1].classList.add('done');
+      rail[1].querySelector('.dot').textContent = '✓';
+      rail[2].classList.add('active');
+      seatCount.textContent = `${joinedParticipant.seats_filled}/${joinedParticipant.capacity}`;
       enterBtn.disabled = false;
-    }, 3200);
-  });
+      setFlowStatus('Seat confirmed. Enter the arena when you are ready to speak.');
+      sendSocket('JOIN_WAITING_ROOM', {});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      joinedParticipant = null;
+      joinBtn.disabled = false;
+      joinBtn.textContent = 'Join a live GD →';
+      setFlowStatus(error.message, true);
+    }
+  }
 
-  leaveBtn.addEventListener('click', () => {
-    waitingWrap.classList.remove('active');
-    setupWrap.style.display = 'block';
-    rail[0].classList.add('active'); rail[0].classList.remove('done'); rail[0].querySelector('.dot').textContent = '1';
-    rail[1].classList.remove('done');
-    rail[2].classList.remove('active');
-    lastNode.classList.remove('in');
-    seatCount.textContent = '4/6';
-    waitingStatus.innerHTML = 'Waiting on <b>2 more peers</b> to fill the ring.';
-    enterBtn.disabled = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  function openSessionSocket() {
+    return new Promise((resolve, reject) => {
+      const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const url = `${scheme}://${window.location.host}/ws/sessions/${selectedSession.id}/${joinedParticipant.participant_id}`;
+      sessionSocket = new WebSocket(url);
+      sessionSocket.addEventListener('open', resolve, { once: true });
+      sessionSocket.addEventListener('error', () => reject(new Error('The session WebSocket could not connect.')), { once: true });
+      sessionSocket.addEventListener('message', event => {
+        try {
+          handleSocketMessage(JSON.parse(event.data));
+        } catch (_) {
+          setFlowStatus('A malformed session update was ignored.', true);
+        }
+      });
+      sessionSocket.addEventListener('close', () => {
+        if (!isLeaving && joinedParticipant) {
+          setFlowStatus('Live session updates disconnected. Refresh to reconnect.', true);
+        }
+      });
+    });
+  }
 
-// --- AGORA VIDEO INTEGRATION ---
-  const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-  let localTracks = { videoTrack: null, audioTrack: null };
-  let remoteUsers = {};
-  let sessionTimerInterval;
-  
-  // IMPORTANT: Insert your actual Agora App ID here
-  const APP_ID = "YOUR_AGORA_APP_ID"; 
-  const CHANNEL = "skillswap-gd-room";
-  
-  const arenaWrap = document.getElementById('arenaWrap');
-  const videoGrid = document.getElementById('video-grid');
-  const sessionTimerDisplay = document.getElementById('sessionTimer');
+  function sendSocket(type, payload) {
+    if (sessionSocket?.readyState === WebSocket.OPEN) {
+      sessionSocket.send(JSON.stringify({ type, payload }));
+    }
+  }
 
-  enterBtn.addEventListener('click', async () => {
-    enterBtn.textContent = 'Entering…';
-    enterBtn.disabled = true;
+  function handleSocketMessage(message) {
+    const payload = message.payload || {};
+    if (message.type === 'SESSION_STATE') {
+      (payload.arenaParticipants || []).forEach(registerArenaParticipant);
+    } else if (message.type === 'QUEUE_UPDATED') {
+      const connected = payload.participants?.length || joinedParticipant.seats_filled;
+      seatCount.textContent = `${connected}/${joinedParticipant.capacity}`;
+    } else if (message.type === 'USER_JOINED_ARENA') {
+      registerArenaParticipant(payload);
+    } else if (message.type === 'USER_LEFT_ARENA') {
+      const participant = arenaParticipantsById.get(payload.participantId);
+      if (participant) removeParticipantCard(participant.agoraUid);
+    } else if (message.type === 'mic_status') {
+      const participant = arenaParticipantsById.get(payload.participantId) || payload;
+      participant.micEnabled = payload.enabled;
+      registerArenaParticipant(participant);
+      updateParticipantCard(payload.agoraUid, payload.enabled);
+    } else if (message.type === 'TIMER_TICK') {
+      updateTimer(payload.remainingSeconds);
+    }
+  }
 
-    // Check user preferences from your custom toggles
-    const micEnabled = micToggle.classList.contains('on');
-    const camEnabled = camToggle.classList.contains('on');
+  function registerArenaParticipant(participant) {
+    if (participant.agoraUid === undefined || participant.agoraUid === null) return;
+    arenaParticipantsByUid.set(String(participant.agoraUid), participant);
+    if (participant.participantId) arenaParticipantsById.set(participant.participantId, participant);
+    upsertParticipantCard(
+      participant.agoraUid,
+      participant.alias || `Peer ${String(participant.agoraUid).slice(-4)}`,
+      participant.micEnabled !== false,
+      participant.participantId === joinedParticipant?.participant_id,
+    );
+  }
 
-    // Transition UI
-    waitingWrap.classList.remove('active');
-    arenaWrap.style.display = 'block';
+  function upsertParticipantCard(uid, alias, micEnabled, isLocal = false) {
+    let card = document.getElementById(`user-container-${uid}`);
+    if (!card) {
+      card = document.createElement('div');
+      card.id = `user-container-${uid}`;
+      card.style.cssText = 'border-radius:12px; background:var(--bg); border:1px solid var(--line); min-height:180px; padding:24px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; position:relative; overflow:hidden;';
+      card.innerHTML = `
+        <div class="audio-avatar" style="width:64px;height:64px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:1.25rem;font-weight:700;"></div>
+        <strong class="audio-name"></strong>
+        <span class="audio-state" style="font-family:var(--mono);font-size:.75rem;color:var(--cyan);"></span>
+        <div id="user-video-${uid}" style="position:absolute;inset:0;z-index:0;"></div>
+      `;
+      videoGrid.appendChild(card);
+    }
+    card.querySelector('.audio-avatar').textContent = alias.slice(0, 2).toUpperCase();
+    card.querySelector('.audio-name').textContent = isLocal ? `${alias} (you)` : alias;
+    card.querySelector('.audio-avatar').style.zIndex = '1';
+    card.querySelector('.audio-name').style.zIndex = '1';
+    card.querySelector('.audio-state').style.zIndex = '1';
+    updateParticipantCard(uid, micEnabled);
+    return card;
+  }
 
-    // 1. Join Agora Channel
-    const uid = await client.join(APP_ID, CHANNEL, null, null);
+  function updateParticipantCard(uid, micEnabled) {
+    const card = document.getElementById(`user-container-${uid}`);
+    if (!card) return;
+    const state = card.querySelector('.audio-state');
+    state.textContent = micEnabled ? '● Microphone live' : '○ Microphone muted';
+    state.style.color = micEnabled ? 'var(--cyan)' : 'var(--text-dim)';
+  }
 
-    // 2. Setup Local Media
-    if (micEnabled) localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    if (camEnabled) localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack();
+  function removeParticipantCard(uid) {
+    document.getElementById(`user-container-${uid}`)?.remove();
+    arenaParticipantsByUid.delete(String(uid));
+  }
 
-    // 3. Render Local Player
-    createPlayerUI(uid, aliasInput.value || "You");
-    if (localTracks.videoTrack) localTracks.videoTrack.play(`user-video-${uid}`);
-
-    // 4. Publish Media
-    const tracksToPublish = Object.values(localTracks).filter(track => track !== null);
-    if(tracksToPublish.length > 0) await client.publish(tracksToPublish);
-
-    // 5. Start Session Logic
-    client.on("user-published", handleUserPublished);
-    client.on("user-left", handleUserLeft);
-    startArenaTimer(15 * 60);
-  });
+  function configureRtcClient() {
+    if (rtcClient) return rtcClient;
+    if (typeof AgoraRTC === 'undefined') {
+      throw new Error('Agora Web SDK did not load. Check the browser network connection and refresh.');
+    }
+    if (!AgoraRTC.checkSystemRequirements()) {
+      throw new Error('This browser does not support the WebRTC features required by Agora.');
+    }
+    rtcClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    rtcClient.on('user-joined', user => {
+      const participant = arenaParticipantsByUid.get(String(user.uid));
+      upsertParticipantCard(user.uid, participant?.alias || `Peer ${String(user.uid).slice(-4)}`, participant?.micEnabled !== false);
+    });
+    rtcClient.on('user-published', handleUserPublished);
+    rtcClient.on('user-unpublished', (user, mediaType) => {
+      if (mediaType === 'audio') updateParticipantCard(user.uid, false);
+    });
+    rtcClient.on('user-left', user => {
+      remoteUsers.delete(String(user.uid));
+      removeParticipantCard(user.uid);
+    });
+    rtcClient.on('connection-state-change', (current, previous, reason) => {
+      if (current === 'RECONNECTING') setFlowStatus('Audio connection interrupted. Reconnecting…');
+      if (current === 'CONNECTED' && previous === 'RECONNECTING') setFlowStatus('Audio connection restored.');
+      if (current === 'DISCONNECTED' && !isLeaving) setFlowStatus(`Audio disconnected${reason ? `: ${reason}` : '.'}`, true);
+    });
+    rtcClient.on('token-privilege-will-expire', renewAgoraToken);
+    rtcClient.on('token-privilege-did-expire', () => {
+      setFlowStatus('The Agora token expired before it could be renewed. Leave and re-enter the arena.', true);
+    });
+    rtcClient.on('volume-indicator', volumes => {
+      document.querySelectorAll('[id^="user-container-"]').forEach(card => card.style.boxShadow = 'none');
+      volumes.filter(item => item.level > 55).forEach(item => {
+        const card = document.getElementById(`user-container-${item.uid}`);
+        if (card) card.style.boxShadow = '0 0 0 2px var(--cyan)';
+      });
+    });
+    AgoraRTC.on('autoplay-failed', () => {
+      resumeAudioBtn.style.display = 'inline-flex';
+      setFlowStatus('Your browser blocked remote audio. Click “Resume audio”.', true);
+    });
+    return rtcClient;
+  }
 
   async function handleUserPublished(user, mediaType) {
-    remoteUsers[user.uid] = user;
-    await client.subscribe(user, mediaType);
-    
-    if (mediaType === "video") {
-      createPlayerUI(user.uid, `Peer ${user.uid.toString().slice(-4)}`);
-      user.videoTrack.play(`user-video-${user.uid}`);
-    }
-    if (mediaType === "audio") {
-      user.audioTrack.play();
+    try {
+      remoteUsers.set(String(user.uid), user);
+      await rtcClient.subscribe(user, mediaType);
+      const participant = arenaParticipantsByUid.get(String(user.uid));
+      upsertParticipantCard(user.uid, participant?.alias || `Peer ${String(user.uid).slice(-4)}`, true);
+      if (mediaType === 'audio' && user.audioTrack) {
+        user.audioTrack.play();
+        updateParticipantCard(user.uid, true);
+      }
+      if (mediaType === 'video' && user.videoTrack) {
+        user.videoTrack.play(`user-video-${user.uid}`);
+      }
+    } catch (error) {
+      setFlowStatus(`Could not subscribe to a remote ${mediaType} track: ${error.message}`, true);
     }
   }
 
-  function handleUserLeft(user) {
-    delete remoteUsers[user.uid];
-    document.getElementById(`user-container-${user.uid}`)?.remove();
+  async function requestAgoraToken() {
+    return apiRequest(`/api/sessions/${selectedSession.id}/agora-token`, {
+      method: 'POST',
+      body: JSON.stringify({ participant_id: joinedParticipant.participant_id, role: 'publisher' }),
+    });
   }
 
-  function createPlayerUI(uid, name) {
-    if(document.getElementById(`user-container-${uid}`)) return;
-    
-    const wrapper = document.createElement('div');
-    wrapper.id = `user-container-${uid}`;
-    wrapper.style.cssText = "border-radius: 12px; overflow: hidden; background: var(--bg); aspect-ratio: 16/9; position: relative; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;";
-    
-    // Fallback UI for users with no camera
-    wrapper.innerHTML = `
-      <span style="font-family: var(--display); font-size: 2rem; color: var(--text-dim);">No Camera</span>
-      <div id="user-video-${uid}" style="position: absolute; inset: 0; width: 100%; height: 100%;"></div>
-      <span style="position: absolute; bottom: 10px; left: 10px; background: rgba(10,14,26,0.85); padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-family: var(--mono); border: 1px solid var(--line);">${name}</span>
-    `;
-    videoGrid.appendChild(wrapper);
-  }
-
-  // --- LEAVE & CLEANUP LOGIC ---
-  async function leaveAgoraSession() {
-    for (trackName in localTracks) {
-      let track = localTracks[trackName];
-      if (track) { track.stop(); track.close(); localTracks[trackName] = null; }
+  async function renewAgoraToken() {
+    try {
+      const tokenData = await requestAgoraToken();
+      await rtcClient.renewToken(tokenData.token);
+    } catch (error) {
+      setFlowStatus(`Agora token renewal failed: ${error.message}`, true);
     }
-    await client.leave();
-    videoGrid.innerHTML = "";
+  }
+
+  async function enterArena() {
+    if (!joinedParticipant || isInArena) return;
+    enterBtn.textContent = 'Connecting microphone…';
+    enterBtn.disabled = true;
+    try {
+      const tokenData = await requestAgoraToken();
+      const client = configureRtcClient();
+      localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({ encoderConfig: 'speech_standard' });
+      const startWithMic = micToggle.classList.contains('on');
+      const publishTracks = [];
+      if (startWithMic) publishTracks.push(localAudioTrack);
+      if (camToggle.classList.contains('on')) {
+        try {
+          localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+          publishTracks.push(localVideoTrack);
+        } catch (cameraError) {
+          setFlowStatus(`Camera was not started; audio will continue. ${cameraError.message}`);
+        }
+      }
+      const uid = await client.join(tokenData.app_id, tokenData.channel, tokenData.token, tokenData.uid);
+      if (publishTracks.length) await client.publish(publishTracks);
+      audioPublished = startWithMic;
+      isMicMuted = !startWithMic;
+      client.enableAudioVolumeIndicator();
+      upsertParticipantCard(uid, aliasInput.value.trim(), startWithMic, true);
+      if (localVideoTrack) localVideoTrack.play(`user-video-${uid}`);
+      waitingWrap.classList.remove('active');
+      arenaWrap.style.display = 'block';
+      isInArena = true;
+      muteArenaBtn.disabled = false;
+      updateMuteButton();
+      setFlowStatus(startWithMic ? 'Connected. Your microphone is live.' : 'Connected. Your microphone is muted.');
+      sendSocket('ARENA_JOINED', {});
+      sendSocket('mic_status', { enabled: startWithMic });
+      startArenaTimer(selectedSession.duration_seconds || 900);
+    } catch (error) {
+      await cleanupRtc();
+      enterBtn.disabled = false;
+      enterBtn.textContent = 'Enter arena →';
+      const microphoneMessage = error.name === 'NotAllowedError'
+        ? 'Microphone permission was denied. Allow microphone access in the browser and try again.'
+        : error.message;
+      setFlowStatus(microphoneMessage, true);
+    }
+  }
+
+  async function toggleLiveMute() {
+    if (!localAudioTrack || !rtcClient) return;
+    muteArenaBtn.disabled = true;
+    try {
+      if (isMicMuted) {
+        if (!audioPublished) {
+          await rtcClient.publish(localAudioTrack);
+          audioPublished = true;
+        } else {
+          await localAudioTrack.setMuted(false);
+        }
+        isMicMuted = false;
+      } else {
+        await localAudioTrack.setMuted(true);
+        isMicMuted = true;
+      }
+      updateMuteButton();
+      updateParticipantCard(rtcClient.uid, !isMicMuted);
+      sendSocket('mic_status', { enabled: !isMicMuted });
+    } catch (error) {
+      setFlowStatus(`Microphone state could not be changed: ${error.message}`, true);
+    } finally {
+      muteArenaBtn.disabled = false;
+    }
+  }
+
+  function updateMuteButton() {
+    muteArenaBtn.textContent = isMicMuted ? 'Unmute microphone' : 'Mute microphone';
+    muteArenaBtn.style.borderColor = isMicMuted ? 'var(--amber)' : '';
+    muteArenaBtn.style.color = isMicMuted ? 'var(--amber)' : '';
+  }
+
+  async function resumeRemoteAudio() {
+    remoteUsers.forEach(user => user.audioTrack?.play());
+    resumeAudioBtn.style.display = 'none';
+    setFlowStatus('Remote audio resumed.');
+  }
+
+  async function cleanupRtc() {
+    if (localAudioTrack) {
+      localAudioTrack.stop();
+      localAudioTrack.close();
+      localAudioTrack = null;
+    }
+    if (localVideoTrack) {
+      localVideoTrack.stop();
+      localVideoTrack.close();
+      localVideoTrack = null;
+    }
+    if (rtcClient && rtcClient.connectionState !== 'DISCONNECTED') {
+      try { await rtcClient.leave(); } catch (_) {}
+    }
+    rtcClient?.removeAllListeners();
+    rtcClient = null;
+    remoteUsers.clear();
+    arenaParticipantsByUid.clear();
+    arenaParticipantsById.clear();
+    videoGrid.innerHTML = '';
     clearInterval(sessionTimerInterval);
-    
-    // Reset UI
+    audioPublished = false;
+    isMicMuted = false;
+    isInArena = false;
+  }
+
+  async function leaveCurrentSession(fromArena) {
+    if (!joinedParticipant || isLeaving) return;
+    isLeaving = true;
+    const participantId = joinedParticipant.participant_id;
+    const sessionId = selectedSession.id;
+    if (fromArena) sendSocket('LEAVE_ARENA', {});
+    else sendSocket('LEAVE_WAITING_ROOM', {});
+    try {
+      await apiRequest(`/api/sessions/${sessionId}/leave`, {
+        method: 'POST',
+        body: JSON.stringify({ participant_id: participantId }),
+      });
+    } catch (error) {
+      if (!error.message.includes('not found')) console.warn(error);
+    }
+    sessionSocket?.close();
+    sessionSocket = null;
+    await cleanupRtc();
+    joinedParticipant = null;
+    waitingWrap.classList.remove('active');
     arenaWrap.style.display = 'none';
     setupWrap.style.display = 'block';
     enterBtn.textContent = 'Enter arena →';
-    enterBtn.disabled = true; // resets to wait state
-    leaveBtn.click(); // Triggers your existing wait-room cleanup
+    enterBtn.disabled = true;
+    muteArenaBtn.disabled = true;
+    rail[0].classList.add('active');
+    rail[0].classList.remove('done');
+    rail[0].querySelector('.dot').textContent = '1';
+    rail[1].classList.remove('done');
+    rail[2].classList.remove('active');
+    aliasInput.value = randomAlias();
+    syncAlias();
+    isLeaving = false;
+    await loadSessions();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  document.getElementById('leaveArenaBtn').addEventListener('click', leaveAgoraSession);
 
   function startArenaTimer(duration) {
-    let timer = duration;
     clearInterval(sessionTimerInterval);
+    let timer = duration;
+    updateTimer(timer);
     sessionTimerInterval = setInterval(() => {
-      let m = parseInt(timer / 60, 10);
-      let s = parseInt(timer % 60, 10);
-      sessionTimerDisplay.textContent = `⏱ ${m}:${s < 10 ? "0" : ""}${s} remaining`;
-      if (--timer < 0) leaveAgoraSession();
+      timer -= 1;
+      updateTimer(timer);
+      if (timer <= 0) leaveCurrentSession(true);
     }, 1000);
   }
+
+  function updateTimer(seconds) {
+    const minutes = Math.max(0, Math.floor(seconds / 60));
+    const remainder = Math.max(0, seconds % 60);
+    sessionTimerDisplay.textContent = `⏱ ${minutes}:${String(remainder).padStart(2, '0')} remaining`;
+  }
+
+  joinBtn.addEventListener('click', joinSelectedSession);
+  enterBtn.addEventListener('click', enterArena);
+  leaveBtn.addEventListener('click', () => leaveCurrentSession(false));
+  leaveArenaBtn.addEventListener('click', () => leaveCurrentSession(true));
+  muteArenaBtn.addEventListener('click', toggleLiveMute);
+  resumeAudioBtn.addEventListener('click', resumeRemoteAudio);
+
+  window.addEventListener('pagehide', () => {
+    if (!joinedParticipant || isLeaving) return;
+    sendSocket(isInArena ? 'LEAVE_ARENA' : 'LEAVE_WAITING_ROOM', {});
+    fetch(`${API_BASE}/api/sessions/${selectedSession.id}/leave`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ participant_id: joinedParticipant.participant_id }),
+      keepalive: true,
+    });
+    localAudioTrack?.close();
+    localVideoTrack?.close();
+  });
+
+  loadSessions();
 </script>
 
 </body>

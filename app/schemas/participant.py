@@ -8,7 +8,7 @@ class RandomAliasResponse(BaseModel):
 
 class IdentityRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    alias: str = Field(max_length=14)
+    alias: str = Field(min_length=1, max_length=14)
     avatar_color: str
 
     @field_validator('avatar_color')

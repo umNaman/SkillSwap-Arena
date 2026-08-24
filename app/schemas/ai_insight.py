@@ -1,18 +1,19 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+import uuid
+from pydantic import BaseModel, ConfigDict, Field
 
 class AnalyzeRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    session_id: str
+    session_id: uuid.UUID
 
 class InsightResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    session_id: str
-    participant_id: Optional[str] = None
+    session_id: uuid.UUID
+    participant_id: Optional[uuid.UUID] = None
     transcription: Optional[str] = None
-    strengths: List[str]
-    improvements: List[str]
+    strengths: List[str] = Field(default_factory=list)
+    improvements: List[str] = Field(default_factory=list)
     overall_score: Optional[int] = None
     summary: Optional[str] = None
     status: str

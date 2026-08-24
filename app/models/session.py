@@ -2,14 +2,14 @@ import uuid
 import enum
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Integer, DateTime, Enum, func
+from sqlalchemy import String, Integer, DateTime, Enum, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
 
 class SessionStatus(str, enum.Enum):
     FILLING = 'filling'
+    STARTING = 'starting'
     IN_PROGRESS = 'in_progress'
     FEEDBACK = 'feedback'
     COMPLETED = 'completed'
@@ -17,7 +17,7 @@ class SessionStatus(str, enum.Enum):
 class GDSession(Base):
     __tablename__ = 'gd_sessions'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     topic: Mapped[str] = mapped_column(String(500), nullable=False)
     max_seats: Mapped[int] = mapped_column(Integer, default=6)
     status: Mapped[SessionStatus] = mapped_column(Enum(SessionStatus), default=SessionStatus.FILLING)

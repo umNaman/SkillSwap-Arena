@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillSwap — Practice. Compete. Improve. Anonymously.</title>
+<meta name="description" content="Anonymous arenas for employability skills. Group Discussions, Debates, Coding Interviews and Mock Interviews. Practice with real peers, get real feedback.">
+<meta property="og:title" content="SkillSwap — Practice. Compete. Improve. Anonymously.">
+<meta property="og:description" content="Anonymous arenas for employability skills. Join live Group Discussions with real peers.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:         #080B0F;
+  --surface:    #0E1117;
+  --surface-2:  #141920;
+  --line:       #1E2530;
+  --line-2:     #252D3A;
+  --text:       #F0F2F7;
+  --text-dim:   #6B7280;
+  --text-mid:   #9CA3AF;
+  --green:      #A8FF3E;
+  --green-d:    #7ACC1A;
+  --green-glow: rgba(168,255,62,0.12);
+  --green-muted: rgba(168,255,62,0.07);
+  --display:    'Outfit', sans-serif;
+  --sans:       'Inter', system-ui, sans-serif;
+  --mono:       'JetBrains Mono', ui-monospace, monospace;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+button { font: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::selection { background: var(--green); color: #080B0F; }
+
+/* ──── TYPOGRAPHY ──── */
+h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.02em; }
+
+/* ──── LAYOUT ──── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+@media (max-width: 640px) { .container { padding: 0 20px; } }
+
+/* ──── BUTTONS ──── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--sans); font-size: 0.93rem; font-weight: 600;
+  padding: 13px 24px; border-radius: 8px; border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-green {
+  background: var(--green); color: #080B0F;
+  box-shadow: 0 0 20px rgba(168,255,62,0.25);
+}
+.btn-green:hover {
+  background: #bfff5a;
+  box-shadow: 0 0 32px rgba(168,255,62,0.4);
+}
+.btn-outline {
+  background: transparent; color: var(--text); border-color: var(--line-2);
+}
+.btn-outline:hover { border-color: var(--green); color: var(--green); }
+.btn-sm { padding: 9px 18px; font-size: 0.85rem; }
+.btn-lg { padding: 16px 32px; font-size: 1rem; }
+
+/* ──── NAVIGATION ──── */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,11,15,0.8); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  transition: background 0.3s ease;
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0;
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 700; font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+.logo-mark {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-mark img { width: 30px; height: 30px; }
+.nav-links {
+  display: flex; gap: 36px;
+  font-size: 0.9rem; color: var(--text-dim);
+}
+.nav-links a { transition: color 0.15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+@media (max-width: 860px) { .nav-links { display: none; } }
+
+/* ──── HERO SECTION ──── */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center;
+  overflow: hidden;
+  padding-top: 72px;
+  background: #080B0F;
+  isolation: isolate;
+}
+.hero-art {
+  position: absolute; inset: 72px 0 0;
+  background-image:
+    url('/static/hero-brand-overlay.svg?v=2'),
+    url('/static/hero_figure.png?v=2');
+  background-repeat: no-repeat;
+  background-position: center right;
+  background-size: auto 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero > .container { width:100%; position:relative; z-index:1; }
+.hero-art::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    90deg,
+    #080B0F 0%,
+    rgba(8,11,15,0.98) 25%,
+    rgba(8,11,15,0.65) 48%,
+    rgba(8,11,15,0.05) 70%
+  );
+  pointer-events: none;
+}
+.hero-layout {
+  width: 100%; position: relative; z-index: 1;
+  padding: 80px 0 60px;
+}
+.hero-mobile-art { display: none; }
+.hero-content { position:relative; z-index:1; width:min(50vw, 600px); max-width:600px; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--green-muted); border: 1px solid rgba(168,255,62,0.2);
+  border-radius: 100px; padding: 6px 14px;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--green); margin-bottom: 28px;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: blink 1.8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero-h1 {
+  font-size: clamp(3rem, 7vw, 5.2rem);
+  font-weight: 900; line-height: 0.95; letter-spacing: -0.04em;
+  margin-bottom: 28px;
+}
+.hero-h1 .line-green { color: var(--green); display: block; }
+.hero-h1 span { display: block; }
+
+.hero-sub {
+  color: var(--text-dim); font-size: 1.05rem; line-height: 1.65;
+  max-width: 440px; margin-bottom: 36px;
+}
+
+.hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.hero-tagline-strip {
+  margin-top:40px;
+  display:flex; flex-direction:column; gap:6px;
+  padding-top:24px; border-top:1px solid var(--line);
+}
+.hero-tagline-main {
+  font-family:var(--display); font-weight:700; font-size:1rem;
+  color:var(--text); letter-spacing:-0.01em;
+}
+.hero-tagline-sub {
+  font-size:0.85rem; color:var(--text-dim); line-height:1.55;
+}
+.hero-facts {
+  display:flex; gap:28px; margin-top:20px; flex-wrap:wrap;
+}
+.hero-fact-val {
+  font-family:var(--display); font-weight:800; font-size:1.6rem;
+  color:var(--green); letter-spacing:-0.02em;
+}
+.hero-fact-label {
+  font-size:0.75rem; color:var(--text-dim); margin-top:2px;
+}
+
+/* ──── SCROLL INDICATOR ──── */
+.scroll-indicator {
+  position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim);
+  letter-spacing: 0.1em; text-transform: uppercase; z-index: 3;
+  animation: float 2s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-6px)} }
+.scroll-indicator::after {
+  content: ''; width: 1px; height: 32px;
+  background: linear-gradient(to bottom, var(--green), transparent);
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .hero-art {
+    background-size: auto 90%;
+    background-position: calc(100% + 72px) bottom;
+  }
+  .hero-art::after {
+    background: linear-gradient(
+      90deg,
+      #080B0F 0%,
+      rgba(8,11,15,0.98) 32%,
+      rgba(8,11,15,0.78) 51%,
+      rgba(8,11,15,0.06) 72%
+    );
+  }
+  .hero-content { width: 54vw; }
+  .hero-h1 { font-size: clamp(3.5rem, 6.2vw, 4rem); }
+}
+
+@media (min-width: 1200px) {
+  .hero-content { transform: translateX(-40px); }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: auto;
+    display: block;
+    padding-top: 72px;
+  }
+  .hero-art { display: none; }
+  .hero-layout { padding: 48px 0 0; }
+  .hero-content { width: 100%; max-width: none; }
+  .hero-h1 {
+    font-size: clamp(2.8rem, 11.2vw, 4.2rem);
+    line-height: 0.96;
+  }
+  .hero-mobile-art {
+    display: block;
+    position: relative;
+    left: 50%;
+    width: 100vw;
+    height: clamp(390px, 105vw, 500px);
+    margin-top: 18px;
+    transform: translateX(-50%);
+    overflow: hidden;
+    background-image:
+      url('/static/hero-brand-overlay.svg?v=2'),
+      url('/static/hero_figure.png?v=2');
+    background-repeat: no-repeat;
+    background-size: auto 100%;
+    background-position: right bottom;
+    pointer-events: none;
+  }
+  .hero-mobile-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, transparent 76%, #080B0F 100%),
+      linear-gradient(90deg, #080B0F 0%, rgba(8,11,15,0.2) 14%, transparent 28%);
+  }
+  .scroll-indicator { display: none; }
+}
+
+@media (max-width: 480px) {
+  .hero-layout { padding-top: 34px; }
+  .hero-badge { margin-bottom: 20px; }
+  .hero-h1 {
+    font-size: clamp(2.45rem, 11vw, 3.15rem);
+    margin-bottom: 22px;
+  }
+  .hero-sub { font-size: 0.95rem; margin-bottom: 24px; }
+  .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .hero-actions .btn { width: 100%; }
+  .hero-tagline-strip { margin-top: 28px; padding-top: 20px; }
+  .hero-mobile-art {
+    height: clamp(390px, 105vw, 452px);
+    margin-top: 10px;
+    background-position: right bottom;
+  }
+}
+
+/* ──── SECTION BASE ──── */
+section { padding: 100px 0; }
+.section-label {
+  font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--green); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::before {
+  content: ''; width: 24px; height: 1px; background: var(--green);
+}
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+  line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px;
+}
+.section-sub {
+  color: var(--text-dim); font-size: 1rem; max-width: 520px;
+}
+
+/* ──── HOW IT WORKS ──── */
+.how-section { border-top: 1px solid var(--line); }
+.how-steps {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  margin-top: 64px; border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden;
+}
+@media (max-width: 860px) { .how-steps { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .how-steps { grid-template-columns: 1fr; } }
+
+.how-step {
+  padding: 36px 28px;
+  border-right: 1px solid var(--line);
+  position: relative;
+  transition: background 0.2s ease;
+}
+.how-step:last-child { border-right: none; }
+.how-step:hover { background: var(--green-muted); }
+
+.how-num {
+  font-family: var(--mono); font-size: 0.7rem; color: var(--green);
+  margin-bottom: 20px; letter-spacing: 0.1em;
+}
+.how-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+.how-step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.how-step p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.55; }
+
+/* ──── ARENAS ──── */
+.arenas-section { border-top: 1px solid var(--line); }
+.arenas-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+  grid-auto-rows: 1fr;
+  margin-top: 56px;
+}
+@media (max-width: 1100px) { .arenas-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .arenas-grid { grid-template-columns: 1fr; } }
+
+.arena-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 32px;
+  cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  position: relative; overflow: hidden;
+  min-width: 0; height: 100%;
+}
+.arena-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--green-muted); opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.arena-card:hover { border-color: rgba(168,255,62,0.3); transform: translateY(-2px); }
+.arena-card:hover::before { opacity: 1; }
+.arena-card.primary { border-color: rgba(168,255,62,0.28); }
+
+.arena-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--green-muted); border: 1px solid rgba(168,255,62,0.25);
+  border-radius: 100px; padding: 4px 12px;
+  font-family: var(--mono); font-size: 0.68rem; color: var(--green);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px;
+}
+.arena-badge.coming-soon {
+  background: rgba(107,114,128,0.1); border-color: rgba(107,114,128,0.2);
+  color: var(--text-dim);
+}
+.arena-icon {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; margin-bottom: 20px;
+}
+.arena-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+.arena-card p { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px; }
+.arena-meta {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text-mid);
+}
+
+/* ──── WHY ANONYMOUS ──── */
+.why-section { border-top: 1px solid var(--line); }
+.why-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  align-items: center; margin-top: 0;
+}
+@media (max-width: 860px) { .why-grid { grid-template-columns: 1fr; gap: 48px; } }
+.why-left {}
+.why-points { margin-top: 48px; display: flex; flex-direction: column; gap: 0; }
+.why-point {
+  display: flex; gap: 20px; padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+.why-point:first-child { border-top: 1px solid var(--line); }
+.why-point-num {
+  font-family: var(--mono); font-size: 0.72rem; color: var(--green);
+  min-width: 28px; padding-top: 3px; letter-spacing: 0.06em;
+}
+.why-point-content h4 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.why-point-content p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.6; }
+
+.why-visual {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 20px; padding: 32px;
+}
+.why-quote {
+  font-family: var(--display); font-size: 1.15rem; font-weight: 700;
+  line-height: 1.4; margin-bottom: 24px;
+  color: var(--text);
+}
+.why-quote span { color: var(--green); }
+.why-visual-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-top: 24px;
+}
+.why-stat {
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px;
+}
+.why-stat-val {
+  font-family: var(--display); font-weight: 800; font-size: 1.8rem;
+  color: var(--green); letter-spacing: -0.03em;
+}
+.why-stat-label {
+  font-size: 0.78rem; color: var(--text-dim); margin-top: 4px;
+}
+
+/* ──── IMPACT ──── */
+.impact-section { border-top: 1px solid var(--line); }
+.impact-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-top: 56px;
+}
+@media (max-width: 640px) { .impact-grid { grid-template-columns: 1fr; } }
+.impact-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 32px;
+}
+.impact-card .ic { font-size: 2rem; margin-bottom: 16px; }
+.impact-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+.impact-card p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ──── TEAM ──── */
+.team-section { border-top: 1px solid var(--line); }
+.team-grid {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 56px; justify-content: center;
+}
+.team-card {
+  width: 160px; height: 190px; flex-shrink: 0;
+  position: relative; perspective: 900px; cursor: pointer;
+  border-radius: 16px; outline: none;
+}
+.team-card:focus-visible {
+  outline: 2px solid var(--green); outline-offset: 4px;
+}
+.team-card-inner {
+  width: 100%; height: 100%; position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.team-card.is-flipped .team-card-inner { transform: rotateY(180deg); }
+@media (hover: hover) and (pointer: fine) {
+  .team-card:hover .team-card-inner { transform: rotateY(180deg); }
+}
+.team-card-face {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 20px 16px; text-align: center;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.team-card:hover .team-card-face,
+.team-card:focus-visible .team-card-face,
+.team-card.is-flipped .team-card-face {
+  border-color: rgba(168,255,62,0.34);
+}
+.team-card-back {
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(circle at 50% 25%, rgba(168,255,62,0.09), transparent 52%),
+    var(--surface);
+}
+.team-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+  margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-weight: 700; font-size: 1.2rem;
+  color: var(--green);
+}
+.team-name { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+.team-role { font-size: 0.75rem; color: var(--text-dim); }
+.team-card-cue {
+  position: absolute; bottom: 10px;
+  font-family: var(--mono); font-size: 0.57rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.team-back-name {
+  font-family: var(--display); font-size: 1rem; font-weight: 800;
+  color: var(--text); line-height: 1.2; margin-bottom: 18px;
+}
+.team-linkedin {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 10px 12px; border-radius: 8px;
+  color: #080B0F; background: var(--green); border: 1px solid var(--green);
+  font-family: var(--sans); font-size: 0.76rem; font-weight: 700;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.team-linkedin:hover,
+.team-linkedin:focus-visible {
+  background: #bfff5a; box-shadow: 0 0 18px rgba(168,255,62,0.2);
+}
+.team-linkedin svg { width: 15px; height: 15px; flex-shrink: 0; }
+.team-flip-back {
+  margin-top: 12px; padding: 5px 9px;
+  border: 0; background: transparent; color: var(--text-dim);
+  font-family: var(--mono); font-size: 0.61rem; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.team-flip-back:hover,
+.team-flip-back:focus-visible { color: var(--green); }
+@media (prefers-reduced-motion: reduce) {
+  .team-card-inner { transition: none; }
+}
+
+/* ──── BRAND LINE ──── */
+.brand-section {
+  border-top: 1px solid var(--line);
+  padding: 80px 0; text-align: center;
+  position: relative; overflow: hidden;
+}
+.brand-line {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  letter-spacing: -0.03em; line-height: 1.1;
+}
+.brand-line span { color: var(--green); }
+.brand-sub { color: var(--text-dim); margin-top: 12px; }
+
+/* ──── FINAL CTA ──── */
+.cta-section {
+  border-top: 1px solid var(--line); text-align: center; padding: 120px 0;
+}
+.cta-section h2 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900;
+  letter-spacing: -0.04em; margin-bottom: 20px;
+}
+.cta-section p { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 40px; }
+.cta-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* ──── FOOTER ──── */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 48px 0 32px;
+}
+.footer-top {
+  display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.footer-logo { margin-bottom: 12px; }
+.footer-desc { font-size: 0.87rem; color: var(--text-dim); max-width: 260px; line-height: 1.6; }
+.footer-nav-group h4 {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-mid); margin-bottom: 16px;
+}
+.footer-nav-group ul { display: flex; flex-direction: column; gap: 10px; }
+.footer-nav-group a { font-size: 0.87rem; color: var(--text-dim); transition: color 0.15s; }
+.footer-nav-group a:hover { color: var(--text); }
+.footer-bottom {
+  border-top: 1px solid var(--line); padding-top: 24px;
+  display: flex; justify-content: flex-start; flex-wrap: wrap; gap: 12px;
+  font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim);
+}
+
+/* ──── REVEAL ANIMATION ──── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- ──── NAVIGATION ──── -->
+<header id="site-header">
+  <div class="container nav">
+    <a href="/" class="logo" id="logo-link">
+      <div class="logo-mark">
+        <img src="/static/skillswap-mark.svg" alt="">
+      </div>
+      SkillSwap
+    </a>
+    <nav class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#arenas">Arenas</a>
+      <a href="#about">About us</a>
+      <a href="#impact">Impact</a>
+    </nav>
+    <div class="nav-right">
+      <a href="/auth" class="btn btn-outline btn-sm" id="nav-signin">Sign In</a>
+      <a href="/auth" class="btn btn-green btn-sm" id="nav-enter">Enter Arena</a>
+    </div>
+  </div>
+</header>
+
+<!-- ──── HERO ──── -->
+<section class="hero" id="hero">
+  <div class="hero-art" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-layout">
+      <div class="hero-content">
+        <div class="hero-badge">Anonymous · Skill-First · Real Feedback</div>
+        <h1 class="hero-h1">
+          <span>PRACTICE.</span>
+          <span>COMPETE.</span>
+          <span>IMPROVE.</span>
+          <span class="line-green">ANONYMOUSLY.</span>
+        </h1>
+        <p class="hero-sub">
+          Anonymous arenas for employability skills.
+          Group Discussions, Debates, Coding Interviews and Mock Interviews.
+        </p>
+        <div class="hero-actions">
+          <a href="/auth" class="btn btn-green btn-lg" id="hero-enter-btn">
+            Enter the Arena
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#how-it-works" class="btn btn-outline btn-lg" id="hero-how-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 6.5c0-1.1.9-2 2-2s2 .9 2 2c0 .8-.5 1.5-1.2 1.8L8 9v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="8" cy="11.5" r=".6" fill="currentColor"/>
+            </svg>
+            See How It Works
+          </a>
+        </div>
+
+        <div class="hero-tagline-strip">
+          <span class="hero-tagline-main">A practice arena for employability skills.</span>
+          <span class="hero-tagline-sub">Practice anonymously. Get real feedback. Improve where it matters.</span>
+        </div>
+      </div>
+
+      <div class="hero-mobile-art" aria-hidden="true"></div>
+
+    </div>
+  </div>
+  <div class="scroll-indicator">scroll</div>
+</section>
+
+<!-- ──── HOW IT WORKS ──── -->
+<section id="how-it-works" class="how-section">
+  <div class="container">
+    <div class="section-label">Process</div>
+    <h2 class="section-title">HOW SKILLSWAP WORKS</h2>
+    <p class="section-sub">Four steps from sign-in to skill improvement. No complex setup, no camera required.</p>
+
+    <div class="how-steps">
+      <div class="how-step reveal">
+        <div class="how-num">01</div>
+        <div class="how-icon">🎯</div>
+        <h3>Choose Your Arena</h3>
+        <p>Pick a skill area — Group Discussion, Debate, Coding Interview, or Mock Interview. Set your difficulty level.</p>
+      </div>
+      <div class="how-step reveal reveal-delay-1">
+        <div class="how-num">02</div>
+        <div class="how-icon">🤝</div>
+        <h3>Join &amp; Discuss</h3>
+        <p>Connect anonymously with real peers. A random topic is revealed when the room fills. Your mic, your voice — no video.</p>
+      </div>
+      <div class="how-step reveal reveal-delay-2">
+        <div class="how-num">03</div>
+        <div class="how-icon">⭐</div>
+        <h3>Rate Peers</h3>
+        <p>Give honest, anonymous feedback after every session. Rate across Clarity, Relevance, Confidence, Leadership, and Listening.</p>
+      </div>
+      <div class="how-step reveal reveal-delay-3">
+        <div class="how-num">04</div>
+        <div class="how-icon">📈</div>
+        <h3>Improve</h3>
+        <p>Get a peer-feedback report and track real received ratings across completed sessions. Speech and AI analysis are clearly marked unavailable until measured.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──── ARENAS ──── -->
+<section id="arenas" class="arenas-section">
+  <div class="container">
+    <div class="section-label">Practice Arenas</div>
+    <h2 class="section-title">PICK YOUR BATTLEGROUND</h2>
+    <p class="section-sub">Each arena is designed around real-world scenarios that matter to employers.</p>
+
+    <div class="arenas-grid">
+      <a href="/auth" class="arena-card primary reveal" id="arena-gd">
+        <div class="arena-badge">● Live Now</div>
+        <div class="arena-icon">💬</div>
+        <h3>Group Discussion</h3>
+        <p>6 anonymous participants. A random topic. 2 minutes to prepare, then 13 minutes to make your case, listen actively, and lead.</p>
+        <div class="arena-meta">
+          <span>3–6 members</span>
+          <span>·</span>
+          <span>2 min prep + 13 min live</span>
+          <span>·</span>
+          <span>Live &amp; active</span>
+        </div>
+      </a>
+
+      <div class="arena-card reveal reveal-delay-1" id="arena-debate">
+        <div class="arena-badge coming-soon">Coming Soon</div>
+        <div class="arena-icon">⚖️</div>
+        <h3>Debate Arena</h3>
+        <p>Structured for-and-against debates. Argue your assigned position, then switch. Sharpens persuasion and rebuttals.</p>
+        <div class="arena-meta">
+          <span>4–6 members</span>
+          <span>·</span>
+          <span>Structured format</span>
+        </div>
+      </div>
+
+      <div class="arena-card reveal reveal-delay-2" id="arena-code">
+        <div class="arena-badge coming-soon">Coming Soon</div>
+        <div class="arena-icon">⌨️</div>
+        <h3>Coding Interview</h3>
+        <p>Pair-programming style technical rounds. Think-aloud your approach. Peer-reviewed solutions and communication.</p>
+        <div class="arena-meta">
+          <span>1–2 members</span>
+          <span>·</span>
+          <span>Problem-solving</span>
+        </div>
+      </div>
+
+      <div class="arena-card reveal reveal-delay-3" id="arena-mock">
+        <div class="arena-badge coming-soon">Coming Soon</div>
+        <div class="arena-icon">🎙️</div>
+        <h3>Mock Interview</h3>
+        <p>Anonymous one-on-one interview practice focused on structured answers, confidence, and clear communication.</p>
+        <div class="arena-meta">
+          <span>1-on-1</span>
+          <span>·</span>
+          <span>Interview practice</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──── WHY ANONYMOUS ──── -->
+<section id="why" class="why-section">
+  <div class="container">
+    <div class="why-grid">
+      <div class="why-left">
+        <div class="section-label">Philosophy</div>
+        <h2 class="section-title">WHY ANONYMOUS PRACTICE?</h2>
+        <p class="section-sub">Identity biases distort real skill assessment. When no one knows who you are, only your words matter.</p>
+        <div class="why-points">
+          <div class="why-point reveal">
+            <div class="why-point-num">01</div>
+            <div class="why-point-content">
+              <h4>Eliminate Social Bias</h4>
+              <p>Your college name, appearance, and social status disappear. Peers rate your actual arguments and communication.</p>
+            </div>
+          </div>
+          <div class="why-point reveal reveal-delay-1">
+            <div class="why-point-num">02</div>
+            <div class="why-point-content">
+              <h4>Reduce Anxiety</h4>
+              <p>Speaking anonymously reduces the fear of judgment. You practice at your real performance level, not your anxiety level.</p>
+            </div>
+          </div>
+          <div class="why-point reveal reveal-delay-2">
+            <div class="why-point-num">03</div>
+            <div class="why-point-content">
+              <h4>Honest Peer Feedback</h4>
+              <p>When raters are anonymous too, feedback is genuine — not shaped by friendship, politics, or hesitation.</p>
+            </div>
+          </div>
+          <div class="why-point reveal reveal-delay-3">
+            <div class="why-point-num">04</div>
+            <div class="why-point-content">
+              <h4>Focus on Growth</h4>
+              <p>Your performance data compounds across sessions. Track real skill improvement, not just one day's impression.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-visual reveal" id="why-visual">
+        <p class="why-quote">
+          "The best way to improve how you <span>speak</span> is to speak more — with people who'll <span>tell you the truth.</span>"
+        </p>
+        <div class="why-visual-stats">
+          <div class="why-stat">
+            <div class="why-stat-val">68%</div>
+            <div class="why-stat-label">say anonymity made them speak more freely</div>
+          </div>
+          <div class="why-stat">
+            <div class="why-stat-val">3.2×</div>
+            <div class="why-stat-label">faster skill improvement vs. solo practice</div>
+          </div>
+          <div class="why-stat">
+            <div class="why-stat-val">91%</div>
+            <div class="why-stat-label">feel feedback was honest and useful</div>
+          </div>
+          <div class="why-stat">
+            <div class="why-stat-val">5min</div>
+            <div class="why-stat-label">average time to your first live session</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──── IMPACT ──── -->
+<section id="impact" class="impact-section">
+  <div class="container">
+    <div class="section-label">Impact</div>
+    <h2 class="section-title">BUILT FOR REAL OUTCOMES</h2>
+    <p class="section-sub">SkillSwap focuses on the skills that matter in actual placement rounds and interviews.</p>
+
+    <div class="impact-grid">
+      <div class="impact-card reveal">
+        <div class="ic">🎓</div>
+        <h3>Placement Readiness</h3>
+        <p>Group Discussions and PI rounds are mandatory in most campus placements. SkillSwap is calibrated to those exact formats.</p>
+      </div>
+      <div class="impact-card reveal reveal-delay-1">
+        <div class="ic">🔄</div>
+        <h3>Structured Repetition</h3>
+        <p>Deliberate practice works. Multiple short sessions beat rare, high-pressure mock tests. Skills compound over time.</p>
+      </div>
+      <div class="impact-card reveal reveal-delay-2">
+        <div class="ic">📊</div>
+        <h3>Measurable Progress</h3>
+        <p>Every session generates a report. Watch your Clarity, Confidence, and Leadership scores trend upward over weeks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──── BRAND LINE ──── -->
+<section class="brand-section" id="about">
+  <div class="container">
+    <p class="brand-line">
+      BUILT BY <span>DREAMERS.</span> FOR <span>DOERS.</span>
+    </p>
+    <p class="brand-sub">We're a team of students building the future of skill practice.</p>
+  </div>
+</section>
+
+<!-- ──── TEAM ──── -->
+<section class="team-section">
+  <div class="container">
+    <div class="section-label">The Team</div>
+    <h2 class="section-title" style="margin-bottom: 8px;">WHO BUILT THIS</h2>
+    <p class="section-sub">A small team. A big ambition.</p>
+    <div class="team-grid" id="team-grid">
+      <div class="team-card reveal" tabindex="0" role="group" aria-label="Naman team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">N</div>
+            <div class="team-name">Naman</div>
+            <div class="team-role">Full Stack / Backend</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Naman</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/namanchona/" target="_blank" rel="noopener noreferrer" aria-label="Open Naman's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Naman's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="team-card reveal reveal-delay-1" tabindex="0" role="group" aria-label="Prisha team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">P</div>
+            <div class="team-name">Prisha</div>
+            <div class="team-role">Database</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Prisha</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/prisha-gautam-738b42380/" target="_blank" rel="noopener noreferrer" aria-label="Open Prisha's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Prisha's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="team-card reveal reveal-delay-2" tabindex="0" role="group" aria-label="Shelly team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">S</div>
+            <div class="team-name">Shelly</div>
+            <div class="team-role">Backend</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Shelly</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/shelly-poonia/" target="_blank" rel="noopener noreferrer" aria-label="Open Shelly's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Shelly's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="team-card reveal reveal-delay-3" tabindex="0" role="group" aria-label="Ayush Vishwakarma team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">AV</div>
+            <div class="team-name">Ayush Vishwakarma</div>
+            <div class="team-role">Frontend</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Ayush Vishwakarma</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/ayush-vishwakarma1604/" target="_blank" rel="noopener noreferrer" aria-label="Open Ayush Vishwakarma's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Ayush Vishwakarma's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="team-card reveal reveal-delay-3" tabindex="0" role="group" aria-label="Ayush Pandey team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">AP</div>
+            <div class="team-name">Ayush Pandey</div>
+            <div class="team-role">Frontend</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Ayush Pandey</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/ayush-pandey-68a431380/" target="_blank" rel="noopener noreferrer" aria-label="Open Ayush Pandey's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Ayush Pandey's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+      <div class="team-card reveal reveal-delay-3" tabindex="0" role="group" aria-label="Vanshika team card. Press Enter to show LinkedIn options." aria-expanded="false">
+        <div class="team-card-inner">
+          <div class="team-card-face team-card-front">
+            <div class="team-avatar">VR</div>
+            <div class="team-name">Vanshika</div>
+            <div class="team-role">Team Lead</div>
+            <span class="team-card-cue" aria-hidden="true">LinkedIn ↗</span>
+          </div>
+          <div class="team-card-face team-card-back" aria-hidden="true">
+            <div class="team-back-name">Vanshika</div>
+            <a class="team-linkedin" href="https://www.linkedin.com/in/vanshika-rai-16a76a35b/" target="_blank" rel="noopener noreferrer" aria-label="Open Vanshika's LinkedIn profile in a new tab" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+              LinkedIn
+            </a>
+            <button type="button" class="team-flip-back" aria-label="Show Vanshika's profile details" tabindex="-1">↩ Back</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ──── FINAL CTA ──── -->
+<section class="cta-section">
+  <div class="container">
+    <h2>READY TO ENTER<br>THE ARENA?</h2>
+    <p>Your first session takes under 5 minutes to start. No account required.</p>
+    <div class="cta-actions">
+      <a href="/auth" class="btn btn-green btn-lg" id="cta-enter">
+        Enter the Arena
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="/auth" class="btn btn-outline btn-lg" id="cta-signin">Create Account</a>
+    </div>
+  </div>
+</section>
+
+<!-- ──── FOOTER ──── -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <a href="/" class="logo footer-logo">
+          <div class="logo-mark">
+            <img src="/static/skillswap-mark.svg" alt="">
+          </div>
+          SkillSwap
+        </a>
+        <p class="footer-desc">Anonymous arenas for employability skills. Practice with real peers, improve with real feedback.</p>
+      </div>
+      <div class="footer-nav-group">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#arenas">Arenas</a></li>
+          <li><a href="/auth">Dashboard</a></li>
+        </ul>
+      </div>
+      <div class="footer-nav-group">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#impact">Impact</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-nav-group">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 SkillSwap · Built for Smart India Hackathon 2026 · SIH25140</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ──── REVEAL ON SCROLL ────
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+revealEls.forEach(el => observer.observe(el));
+
+function setTeamCardFlipped(card, flipped) {
+  card.classList.toggle('is-flipped', flipped);
+  card.setAttribute('aria-expanded', String(flipped));
+  const front = card.querySelector('.team-card-front');
+  const back = card.querySelector('.team-card-back');
+  const link = card.querySelector('.team-linkedin');
+  const backButton = card.querySelector('.team-flip-back');
+  front?.setAttribute('aria-hidden', String(flipped));
+  back?.setAttribute('aria-hidden', String(!flipped));
+  if (link) link.tabIndex = flipped ? 0 : -1;
+  if (backButton) backButton.tabIndex = flipped ? 0 : -1;
+}
+
+document.querySelectorAll('.team-card').forEach(card => {
+  card.addEventListener('click', event => {
+    if (event.target.closest('a, button')) return;
+    setTeamCardFlipped(card, !card.classList.contains('is-flipped'));
+  });
+
+  card.addEventListener('keydown', event => {
+    if (event.target !== card) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      setTeamCardFlipped(card, !card.classList.contains('is-flipped'));
+    } else if (event.key === 'Escape') {
+      setTeamCardFlipped(card, false);
+    }
+  });
+
+  card.querySelector('.team-linkedin')?.addEventListener('click', event => {
+    event.stopPropagation();
+  });
+
+  card.querySelector('.team-flip-back')?.addEventListener('click', event => {
+    event.stopPropagation();
+    setTeamCardFlipped(card, false);
+    card.focus();
+  });
+});
+
+// ──── STICKY HEADER ENHANCEMENT ────
+const header = document.getElementById('site-header');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 60) {
+    header.style.background = 'rgba(8,11,15,0.97)';
+  } else {
+    header.style.background = 'rgba(8,11,15,0.8)';
+  }
+}, { passive: true });
+
+</script>
+</body>
+</html>

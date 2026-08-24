@@ -2,9 +2,8 @@ import uuid
 import enum
 from datetime import datetime
 from typing import Optional, Any
-from sqlalchemy import Text, Integer, DateTime, Enum, JSON, ForeignKey, func
+from sqlalchemy import Text, Integer, DateTime, Enum, JSON, ForeignKey, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 
 from app.database import Base
 
@@ -17,9 +16,9 @@ class InsightStatus(str, enum.Enum):
 class AIInsight(Base):
     __tablename__ = 'ai_insights'
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
-    participant_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey('participants.id'), nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
+    participant_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid(as_uuid=True), ForeignKey('participants.id'), nullable=True)
     
     transcription: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     strengths: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)

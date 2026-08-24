@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>SkillSwap</title>
+  <path
+    d="M49 12H36.5a9 9 0 0 0-6.35 2.63L18.63 26.15a8.5 8.5 0 0 0 0 12.02 8.5 8.5 0 0 0 12.02 0l5.1-5.1"
+    stroke="#A8FF3E"
+    stroke-width="9"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M15 52h12.5a9 9 0 0 0 6.35-2.63l11.52-11.52a8.5 8.5 0 0 0 0-12.02 8.5 8.5 0 0 0-12.02 0l-5.1 5.1"
+    stroke="#A8FF3E"
+    stroke-width="9"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

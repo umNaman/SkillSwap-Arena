@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import String, Boolean, DateTime, Integer, ForeignKey, UniqueConstraint, func
+from sqlalchemy import String, Boolean, DateTime, Integer, ForeignKey, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
 
@@ -13,9 +12,9 @@ class Participant(Base):
         UniqueConstraint('session_id', 'alias', name='uq_session_alias'),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid(as_uuid=True), ForeignKey('users.id'), nullable=True)
     alias: Mapped[str] = mapped_column(String(50), nullable=False)
     avatar_color: Mapped[str] = mapped_column(String(10), nullable=False)
     mic_on: Mapped[bool] = mapped_column(Boolean, default=True)

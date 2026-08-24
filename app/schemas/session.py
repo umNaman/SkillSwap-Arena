@@ -1,16 +1,17 @@
 from typing import List, Optional
 from datetime import datetime
+import uuid
 from pydantic import BaseModel, ConfigDict, Field
 
 class ParticipantBrief(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: str
+    id: uuid.UUID
     alias: str
     avatar_color: str
 
 class SessionListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: str
+    id: uuid.UUID
     topic: str
     capacity: int
     occupied_seats: int
@@ -27,6 +28,8 @@ class SessionDetail(SessionListItem):
     started_at: Optional[datetime] = None
     ended_at: Optional[datetime] = None
     duration_seconds: int = 900
+    preparation_duration_seconds: int = 120
+    discussion_duration_seconds: int = 780
 
 class JoinSessionRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -37,8 +40,8 @@ class JoinSessionRequest(BaseModel):
 
 class JoinSessionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    session_id: str
-    participant_id: str
+    session_id: uuid.UUID
+    participant_id: uuid.UUID
     seat_number: int
     seats_filled: int
     capacity: int

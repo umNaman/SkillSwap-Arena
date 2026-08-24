@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Float, Text, DateTime, ForeignKey, UniqueConstraint, CheckConstraint, func
+from sqlalchemy import Float, Text, DateTime, ForeignKey, UniqueConstraint, CheckConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
 
@@ -18,10 +17,10 @@ class PeerRating(Base):
         CheckConstraint('leadership >= 1.0 AND leadership <= 5.0', name='chk_leadership'),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
-    rater_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('participants.id'), nullable=False)
-    ratee_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('participants.id'), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey('gd_sessions.id'), nullable=False)
+    rater_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey('participants.id'), nullable=False)
+    ratee_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey('participants.id'), nullable=False)
     
     communication: Mapped[float] = mapped_column(Float, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)

@@ -1,4 +1,5 @@
 from typing import List, Optional
+import uuid
 from pydantic import BaseModel, ConfigDict, Field
 
 class MetricRatings(BaseModel):
@@ -11,16 +12,16 @@ class MetricRatings(BaseModel):
 
 class PeerRatingCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    target_participant_id: str
+    target_participant_id: uuid.UUID
     target_alias: str
     metrics: MetricRatings
     feedback_text: Optional[str] = None
 
 class FeedbackSubmission(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    session_id: str
-    rater_participant_id: str
-    ratings: List[PeerRatingCreate]
+    session_id: uuid.UUID
+    rater_participant_id: uuid.UUID
+    ratings: List[PeerRatingCreate] = Field(min_length=1)
 
 class FeedbackAverages(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -32,12 +33,26 @@ class FeedbackAverages(BaseModel):
 
 class FeedbackSummaryItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    participant_id: str
+    participant_id: uuid.UUID
     alias: str
     averages: FeedbackAverages
     total_raters: int
 
 class FeedbackSummaryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    session_id: str
+    session_id: uuid.UUID
     summaries: List[FeedbackSummaryItem]
+
+
+class ParticipantReportResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    session_id: uuid.UUID
+    participant_id: uuid.UUID
+    alias: str
+    received_count: int
+    expected_count: int
+    overall_rating: Optional[float] = None
+    averages: Optional[FeedbackAverages] = None
+    room_average: Optional[float] = None
+    ai_analysis: Optional[dict] = None
+    speech_metrics_available: bool = False

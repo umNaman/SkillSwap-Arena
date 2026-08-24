@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — SkillSwap</title>
+<meta name="description" content="Sign in, create an account, or continue anonymously. SkillSwap requires no real identity to participate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #080B0F;
+  --surface:    #0E1117;
+  --surface-2:  #141920;
+  --line:       #1E2530;
+  --line-2:     #252D3A;
+  --text:       #F0F2F7;
+  --text-dim:   #6B7280;
+  --text-mid:   #9CA3AF;
+  --green:      #A8FF3E;
+  --green-d:    #7ACC1A;
+  --green-glow: rgba(168,255,62,0.12);
+  --rose:       #F87171;
+  --display:    'Outfit', sans-serif;
+  --sans:       'Inter', system-ui, sans-serif;
+  --mono:       'JetBrains Mono', ui-monospace, monospace;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; }
+body {
+  min-height:100vh; background:var(--bg); color:var(--text);
+  font-family:var(--sans); -webkit-font-smoothing:antialiased;
+  display:flex;
+}
+::selection { background:var(--green); color:#080B0F; }
+
+/* ── LAYOUT ── */
+.auth-wrapper { display:flex; width:100%; min-height:100vh; }
+
+/* LEFT BRAND PANEL */
+.auth-brand {
+  width:42%; background:var(--surface); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; padding:40px;
+  position:relative; overflow:hidden;
+}
+@media(max-width:860px){ .auth-brand{ display:none; } }
+
+.brand-logo {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--display); font-weight:700; font-size:1.1rem;
+  letter-spacing:-0.01em; text-decoration:none; color:var(--text);
+}
+.brand-logo-mark {
+  width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+}
+.brand-logo-mark img { width:30px; height:30px; }
+
+.brand-body {
+  flex:1; display:flex; flex-direction:column; justify-content:center;
+  padding:40px 0;
+}
+.brand-headline {
+  font-family:var(--display); font-weight:900;
+  font-size:clamp(2rem,3.5vw,2.8rem);
+  line-height:1.0; letter-spacing:-0.04em; margin-bottom:20px;
+}
+.brand-headline .green { color:var(--green); }
+.brand-tagline { color:var(--text-dim); font-size:0.95rem; line-height:1.65; max-width:320px; }
+
+.brand-points { margin-top:40px; display:flex; flex-direction:column; gap:0; }
+.brand-point {
+  display:flex; gap:16px; align-items:flex-start;
+  padding:20px 0; border-bottom:1px solid var(--line);
+}
+.brand-point:first-child { border-top:1px solid var(--line); }
+.brand-point-ic {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--surface-2); border:1px solid var(--line-2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem; flex-shrink:0;
+}
+.brand-point h4 { font-size:0.9rem; font-weight:700; margin-bottom:3px; }
+.brand-point p { font-size:0.82rem; color:var(--text-dim); line-height:1.5; }
+
+.brand-footer {
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-dim);
+  letter-spacing:0.05em;
+}
+
+/* Brand atmospheric bg */
+.brand-bg {
+  position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(ellipse 80% 60% at 50% 80%, rgba(168,255,62,0.05) 0%, transparent 60%);
+}
+
+/* RIGHT FORM PANEL */
+.auth-form-wrap {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px 32px;
+}
+.auth-form-inner { width:100%; max-width:420px; }
+
+/* Mobile logo */
+.mobile-logo {
+  display:none; align-items:center; gap:10px;
+  font-family:var(--display); font-weight:700; font-size:1.1rem;
+  margin-bottom:32px; color:var(--text); text-decoration:none;
+}
+.mobile-logo-mark {
+  width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+}
+.mobile-logo-mark img { width:30px; height:30px; }
+@media(max-width:860px){ .mobile-logo{ display:flex; } }
+
+.auth-heading {
+  font-family:var(--display); font-weight:900;
+  font-size:clamp(1.8rem,3vw,2.4rem);
+  letter-spacing:-0.03em; margin-bottom:6px;
+}
+.auth-heading .green { color:var(--green); }
+.auth-sub { color:var(--text-dim); font-size:0.9rem; margin-bottom:32px; }
+
+/* TABS */
+.auth-tabs {
+  display:flex; gap:0; background:var(--surface); border:1px solid var(--line);
+  border-radius:10px; padding:4px; margin-bottom:28px;
+}
+.auth-tab {
+  flex:1; text-align:center; padding:10px; border-radius:7px;
+  font-size:0.88rem; font-weight:600; cursor:pointer; border:none;
+  background:transparent; color:var(--text-dim);
+  transition:background 0.15s, color 0.15s;
+}
+.auth-tab.active { background:var(--surface-2); color:var(--text); }
+.auth-tab:hover:not(.active) { color:var(--text-mid); }
+
+/* FORMS */
+.auth-panel { display:none; }
+.auth-panel.active { display:block; }
+
+.field { margin-bottom:18px; }
+.field label {
+  display:block; font-family:var(--mono); font-size:0.68rem;
+  text-transform:uppercase; letter-spacing:0.1em;
+  color:var(--text-dim); margin-bottom:8px;
+}
+.field input {
+  width:100%; background:var(--surface); border:1px solid var(--line);
+  border-radius:9px; padding:13px 16px; color:var(--text);
+  font-family:var(--sans); font-size:0.95rem;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.field input:focus {
+  outline:none; border-color:rgba(168,255,62,0.4);
+  box-shadow:0 0 0 3px rgba(168,255,62,0.08);
+}
+.field input::placeholder { color:var(--text-dim); }
+.field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.field-row label { margin-bottom:0; }
+.field-link { font-size:0.8rem; color:var(--text-dim); transition:color 0.15s; }
+.field-link:hover { color:var(--green); }
+
+.btn-submit {
+  width:100%; padding:14px; border-radius:9px; border:none;
+  background:var(--green); color:#080B0F;
+  font-family:var(--sans); font-size:0.95rem; font-weight:700;
+  cursor:pointer; transition:background 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow:0 0 20px rgba(168,255,62,0.2);
+  margin-top:4px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-submit:hover { background:#bfff5a; transform:translateY(-1px); box-shadow:0 0 30px rgba(168,255,62,0.35); }
+.btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+.btn-secondary {
+  width:100%; padding:13px; border-radius:9px;
+  border:1px solid var(--line); background:transparent; color:var(--text);
+  font-family:var(--sans); font-size:0.9rem; font-weight:600;
+  cursor:pointer; transition:border-color 0.15s, background 0.15s;
+  margin-top:10px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-secondary:hover { border-color:var(--line-2); background:var(--surface); }
+
+/* Error / status */
+.auth-error {
+  display:none; background:rgba(248,113,113,0.08);
+  border:1px solid rgba(248,113,113,0.25); border-radius:9px;
+  padding:12px 16px; margin-bottom:18px;
+  font-size:0.85rem; color:var(--rose); line-height:1.5;
+}
+.auth-error.visible { display:block; }
+
+/* Divider */
+.auth-divider {
+  display:flex; align-items:center; gap:12px;
+  margin:20px 0; font-size:0.8rem; color:var(--text-dim);
+}
+.auth-divider::before, .auth-divider::after {
+  content:''; flex:1; height:1px; background:var(--line);
+}
+
+/* Guest section */
+.guest-section {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:12px; padding:24px; text-align:center;
+  margin-top:12px;
+}
+.guest-section h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
+.guest-section p { font-size:0.84rem; color:var(--text-dim); margin-bottom:18px; line-height:1.55; }
+.guest-alias-wrap { display:flex; gap:8px; margin-bottom:14px; }
+.guest-alias-wrap input { flex:1; }
+.btn-shuffle {
+  width:44px; height:44px; border-radius:9px; border:1px solid var(--line);
+  background:var(--surface-2); color:var(--text-dim); cursor:pointer;
+  font-size:1.1rem; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  transition:border-color 0.15s, color 0.15s;
+}
+.btn-shuffle:hover { border-color:var(--green); color:var(--green); }
+.guest-note { font-size:0.76rem; color:var(--text-dim); margin-top:10px; }
+
+/* Spinner */
+@keyframes spin { to { transform:rotate(360deg); } }
+.spinner { width:16px; height:16px; border:2px solid rgba(8,11,15,0.3); border-top-color:#080B0F; border-radius:50%; animation:spin 0.7s linear infinite; }
+</style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+  <!-- LEFT BRAND PANEL -->
+  <div class="auth-brand">
+    <div class="brand-bg"></div>
+    <a href="/" class="brand-logo">
+      <div class="brand-logo-mark">
+        <img src="/static/skillswap-mark.svg" alt="">
+      </div>
+      SkillSwap
+    </a>
+
+    <div class="brand-body">
+      <h2 class="brand-headline">
+        WELCOME<br>BACK,<br><span class="green">CHAMP.</span>
+      </h2>
+      <p class="brand-tagline">Sign in to continue your journey of growth. Your alias, your rules.</p>
+
+      <div class="brand-points">
+        <div class="brand-point">
+          <div class="brand-point-ic">🎯</div>
+          <div>
+            <h4>Pick Your Arena</h4>
+            <p>Choose from Group Discussion, Debate, or Interview formats.</p>
+          </div>
+        </div>
+        <div class="brand-point">
+          <div class="brand-point-ic">🎭</div>
+          <div>
+            <h4>Compete Anonymously</h4>
+            <p>No names, no bias. Just your voice and your arguments.</p>
+          </div>
+        </div>
+        <div class="brand-point">
+          <div class="brand-point-ic">📈</div>
+          <div>
+            <h4>Track Progress</h4>
+            <p>Every session builds your profile. Watch the scores climb.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-footer">© 2026 SkillSwap · SIH25140</div>
+  </div>
+
+  <!-- RIGHT FORM PANEL -->
+  <div class="auth-form-wrap">
+    <div class="auth-form-inner">
+      <a href="/" class="mobile-logo">
+        <div class="mobile-logo-mark">
+          <img src="/static/skillswap-mark.svg" alt="">
+        </div>
+        SkillSwap
+      </a>
+
+      <h1 class="auth-heading">Sign <span class="green">In</span></h1>
+      <p class="auth-sub" id="auth-sub-text">Continue your skill journey.</p>
+
+      <!-- TABS -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" id="tab-signin" role="tab" aria-selected="true" onclick="switchTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-register" role="tab" aria-selected="false" onclick="switchTab('register')">Register</button>
+        <button class="auth-tab" id="tab-guest" role="tab" aria-selected="false" onclick="switchTab('guest')">Guest</button>
+      </div>
+
+      <!-- ERROR BOX -->
+      <div class="auth-error" id="auth-error" role="alert"></div>
+
+      <!-- SIGN IN PANEL -->
+      <div class="auth-panel active" id="panel-signin">
+        <form id="form-signin" onsubmit="handleSignIn(event)">
+          <div class="field">
+            <label for="signin-email">Email address</label>
+            <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <label for="signin-password">Password</label>
+              <a href="#" class="field-link">Forgot password?</a>
+            </div>
+            <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-signin">
+            Sign In
+          </button>
+        </form>
+        <div class="auth-divider">or</div>
+        <button class="btn-secondary" onclick="switchTab('guest')" id="goto-guest">
+          Continue as Guest
+        </button>
+        <p style="text-align:center;margin-top:20px;font-size:0.84rem;color:var(--text-dim);">
+          No account? <a href="#" onclick="switchTab('register')" style="color:var(--green);">Register free</a>
+        </p>
+      </div>
+
+      <!-- REGISTER PANEL -->
+      <div class="auth-panel" id="panel-register">
+        <form id="form-register" onsubmit="handleRegister(event)">
+          <div class="field">
+            <label for="reg-email">Email address</label>
+            <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="reg-alias">Default alias (your arena name)</label>
+            <input type="text" id="reg-alias" placeholder="QuietFalcon42" maxlength="14" required>
+          </div>
+          <div class="field">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+          </div>
+          <div class="field">
+            <label for="reg-cohort">Cohort code <span style="color:var(--text-dim);font-weight:400;">(optional)</span></label>
+            <input type="text" id="reg-cohort" placeholder="e.g. VIT2026">
+          </div>
+          <button type="submit" class="btn-submit" id="btn-register">
+            Create Account
+          </button>
+        </form>
+        <p style="text-align:center;margin-top:20px;font-size:0.84rem;color:var(--text-dim);">
+          Already have an account? <a href="#" onclick="switchTab('signin')" style="color:var(--green);">Sign in</a>
+        </p>
+      </div>
+
+      <!-- GUEST PANEL -->
+      <div class="auth-panel" id="panel-guest">
+        <div class="guest-section">
+          <h3>Continue Anonymously</h3>
+          <p>No account needed. Pick an alias and jump straight into the arena. Progress won't be saved across sessions.</p>
+          <div class="guest-alias-wrap">
+            <div class="field" style="margin:0;flex:1;">
+              <input type="text" id="guest-alias" placeholder="QuietFalcon42" maxlength="20" style="margin:0;">
+            </div>
+            <button class="btn-shuffle" id="btn-shuffle-alias" onclick="shuffleAlias()" title="Generate random alias">⟳</button>
+          </div>
+          <button class="btn-submit" id="btn-guest" onclick="handleGuest()">
+            Enter as Guest
+          </button>
+          <p class="guest-note">Your alias is all the room will see. No email, no password.</p>
+        </div>
+        <div class="auth-divider">or</div>
+        <button class="btn-secondary" onclick="switchTab('register')" id="goto-register">
+          Create a free account
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+
+// ── ALIAS GENERATION ──
+const ADJ2 = ['Bold','Calm','Swift','Sharp','Keen','Brave','Cool','Dark','Wry'];
+const NON2 = ['Storm','Falcon','Echo','Ridge','Nova','Viper','Ember','Anchor'];
+function randomAlias() {
+  const a = ADJ2[Math.floor(Math.random() * ADJ2.length)];
+  const n = NON2[Math.floor(Math.random() * NON2.length)];
+  // Keep within 14 chars (schema max_length=14)
+  const base = `${a}${n}`;
+  const num = Math.floor(Math.random() * 9) + 1; // single digit to stay <=14
+  return `${base}${num}`.slice(0, 14);
+}
+function shuffleAlias() {
+  document.getElementById('guest-alias').value = randomAlias();
+}
+
+// Init guest alias
+document.getElementById('guest-alias').value = randomAlias();
+
+// ── TAB SWITCHING ──
+const TAB_HEADINGS = {
+  signin:   ['Sign <span class="green">In</span>', 'Continue your skill journey.'],
+  register: ['Create <span class="green">Account</span>', 'Join the arena. It\'s free.'],
+  guest:    ['Enter <span class="green">Anonymously</span>', 'No account needed — just an alias.'],
+};
+
+function switchTab(id) {
+  document.querySelectorAll('.auth-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.getElementById('tab-'+id).setAttribute('aria-selected','true');
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('auth-error').classList.remove('visible');
+  const [h, s] = TAB_HEADINGS[id];
+  document.getElementById('auth-heading-text') && (document.getElementById('auth-heading-text').innerHTML = h);
+  document.querySelector('.auth-heading').innerHTML = h;
+  document.getElementById('auth-sub-text').textContent = s;
+}
+
+// ── ERROR DISPLAY ──
+function showError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError() {
+  document.getElementById('auth-error').classList.remove('visible');
+}
+
+// ── LOADING STATE ──
+function setLoading(btnId, loading, text = '') {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  if (loading) {
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner"></div> ${text || 'Loading…'}`;
+  } else {
+    btn.disabled = false;
+  }
+}
+
+// ── STORE AUTH & REDIRECT ──
+// Backend AuthResponse: { success, token, user: {id, email, default_alias, cohort_code, is_anonymous} }
+// Backend AnonymousAuthResponse: { success, guest_token, guest_id, alias }
+function storeAuthAndRedirect(data, isAnonymous = false) {
+  if (isAnonymous) {
+    // AnonymousAuthResponse
+    sessionStorage.setItem('ss_guest_token', data.guest_token);
+    sessionStorage.setItem('ss_guest_id', data.guest_id);
+    sessionStorage.setItem('ss_alias', data.alias.slice(0, 14));
+    sessionStorage.setItem('ss_is_anonymous', 'true');
+    localStorage.removeItem('ss_token');
+    localStorage.removeItem('ss_user');
+  } else {
+    // AuthResponse
+    localStorage.setItem('ss_token', data.token);
+    localStorage.setItem('ss_user', JSON.stringify(data.user));
+    const alias = (data.user.default_alias || '').slice(0, 14);
+    sessionStorage.setItem('ss_alias', alias);
+    sessionStorage.setItem('ss_is_anonymous', 'false');
+    sessionStorage.removeItem('ss_guest_token');
+    sessionStorage.removeItem('ss_guest_id');
+  }
+  window.location.href = '/app';
+}
+
+// ── SIGN IN ──
+// Uses POST /api/auth/login → AuthResponse { success, token, user }
+// On failure: show explicit error. Never silent fallback to guest.
+async function handleSignIn(e) {
+  e.preventDefault();
+  clearError();
+  const btn = document.getElementById('btn-signin');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Signing in…';
+
+  const email    = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, stay_signed_in: true }),
+    });
+    const body = await res.json();
+
+    if (!res.ok) {
+      // Explicit error — NEVER fall back to guest
+      const msg = Array.isArray(body?.detail)
+        ? body.detail.map(d => d.msg || d).join('; ')
+        : (body?.detail || `Sign in failed (${res.status})`);
+      throw new Error(msg);
+    }
+
+    if (!body.token) throw new Error('Sign in returned no token. Please try again.');
+    storeAuthAndRedirect(body, false);
+
+  } catch (err) {
+    showError(err.message);
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+// ── REGISTER ──
+// POST /api/auth/register → AuthResponse
+async function handleRegister(e) {
+  e.preventDefault();
+  clearError();
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Creating account…';
+
+  const email         = document.getElementById('reg-email').value.trim();
+  const password      = document.getElementById('reg-password').value;
+  const default_alias = document.getElementById('reg-alias').value.trim().slice(0, 14);
+  const cohort_code   = document.getElementById('reg-cohort').value.trim() || null;
+
+  if (!default_alias) { showError('Please enter an alias.'); btn.disabled=false; btn.textContent='Create Account'; return; }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, default_alias, cohort_code }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      const msg = Array.isArray(body?.detail)
+        ? body.detail.map(d => d.msg || d).join('; ')
+        : (body?.detail || `Registration failed (${res.status})`);
+      throw new Error(msg);
+    }
+    if (!body.token) throw new Error('Registration returned no token.');
+    storeAuthAndRedirect(body, false);
+  } catch (err) {
+    showError(err.message);
+    btn.disabled = false;
+    btn.textContent = 'Create Account';
+  }
+}
+
+// ── GUEST / ANONYMOUS ──
+// POST /api/auth/anonymous → AnonymousAuthResponse { success, guest_token, guest_id, alias }
+// Schema: alias max_length=14
+async function handleGuest() {
+  clearError();
+  const rawAlias = document.getElementById('guest-alias').value.trim();
+  const alias = rawAlias.slice(0, 14); // enforce schema max_length=14
+  if (!alias) { showError('Please enter an alias to continue.'); return; }
+
+  const btn = document.getElementById('btn-guest');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Entering…';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/anonymous`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alias, cohort_code: null }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      const msg = Array.isArray(body?.detail)
+        ? body.detail.map(d => d.msg || d).join('; ')
+        : (body?.detail || `Anonymous login failed (${res.status})`);
+      throw new Error(msg);
+    }
+    if (!body.guest_token) throw new Error('No session token returned. Please try again.');
+    storeAuthAndRedirect(body, true);
+  } catch (err) {
+    showError(err.message);
+    btn.disabled = false;
+    btn.textContent = 'Enter as Guest';
+  }
+}
+
+// ── PRE-FILL ALIAS FROM REGISTER FORM ──
+document.getElementById('reg-alias') && document.getElementById('reg-alias').addEventListener('focus', function() {
+  if (!this.value) this.value = randomAlias();
+});
+
+// ── CHECK EXISTING AUTH ──
+const existingToken = localStorage.getItem('ss_token') || sessionStorage.getItem('ss_guest_token');
+if (existingToken) {
+  // Already authenticated — but don't auto-redirect (user may want to switch accounts)
+  // Show a subtle indicator
+}
+</script>
+</body>
+</html>

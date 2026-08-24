@@ -1,0 +1,3061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillSwap — Arena</title>
+<meta name="description" content="SkillSwap Group Discussion Arena. Practice anonymously with real peers.">
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════ */
+:root {
+  --bg:          #080B0F;
+  --surface:     #0E1117;
+  --surface-2:   #141920;
+  --surface-3:   #1A2230;
+  --line:        #1E2530;
+  --line-2:      #252D3A;
+  --text:        #F0F2F7;
+  --text-dim:    #6B7280;
+  --text-mid:    #9CA3AF;
+  --green:       #A8FF3E;
+  --green-d:     #7ACC1A;
+  --green-dim:   #5F9F32;
+  --green-glow:  rgba(168,255,62,0.12);
+  --green-muted: rgba(168,255,62,0.07);
+  --rose:        #F87171;
+  --amber:       #FCD34D;
+  --display:     'Outfit', sans-serif;
+  --sans:        'Inter', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; scroll-behavior:smooth; }
+body {
+  min-height:100vh; background:var(--bg); color:var(--text);
+  font-family:var(--sans); -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection { background:var(--green); color:#080B0F; }
+a { color:inherit; text-decoration:none; }
+button { font:inherit; cursor:pointer; }
+img { max-width:100%; display:block; }
+
+/* ════════════════════════════════════════
+   APP SHELL — SIDEBAR + MAIN
+════════════════════════════════════════ */
+.app-shell {
+  display:flex; min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:220px; flex-shrink:0;
+  background:var(--surface); border-right:1px solid var(--line);
+  display:flex; flex-direction:column;
+  position:fixed; top:0; left:0; bottom:0; z-index:60;
+  transition:transform 0.25s ease, opacity 0.2s ease;
+}
+.sidebar-logo {
+  display:flex; align-items:center; gap:10px; padding:20px 20px 16px;
+  font-family:var(--display); font-weight:700; font-size:1.05rem;
+  border-bottom:1px solid var(--line); text-decoration:none; color:var(--text);
+}
+.logo-mark {
+  width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.logo-mark img { width:28px; height:28px; }
+
+.sidebar-user {
+  padding:16px 20px; border-bottom:1px solid var(--line);
+}
+.user-alias {
+  font-family:var(--display); font-weight:700; font-size:1rem;
+  margin-bottom:4px; display:flex; align-items:center; gap:8px;
+}
+.anon-badge {
+  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--green);
+  background:var(--green-muted); border:1px solid rgba(168,255,62,0.2);
+  border-radius:100px; padding:2px 8px;
+}
+.user-meta { font-size:0.78rem; color:var(--text-dim); }
+
+.sidebar-nav { flex:1; padding:12px 12px; overflow-y:auto; }
+.nav-group { margin-bottom:20px; }
+.nav-group-label {
+  font-family:var(--mono); font-size:0.6rem; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--text-dim); padding:0 8px; margin-bottom:6px;
+}
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 10px; border-radius:8px; font-size:0.88rem;
+  color:var(--text-dim); transition:background 0.15s, color 0.15s;
+  border:none; background:none; width:100%; text-align:left;
+}
+.nav-item:hover { background:var(--surface-2); color:var(--text); }
+.nav-item.active { background:var(--green-muted); color:var(--green); }
+.nav-item-ic { width:18px; text-align:center; font-size:0.95rem; flex-shrink:0; }
+
+.sidebar-bottom {
+  padding:14px 12px; border-top:1px solid var(--line);
+}
+.logout-btn {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 10px; border-radius:8px; font-size:0.85rem;
+  color:var(--text-dim); transition:background 0.15s, color 0.15s;
+  border:none; background:none; width:100%; text-align:left;
+}
+.logout-btn:hover { background:rgba(248,113,113,0.08); color:var(--rose); }
+
+/* MAIN CONTENT AREA */
+.main-area {
+  flex:1; margin-left:220px; min-height:100vh;
+  display:flex; flex-direction:column;
+  transition:margin-left 0.25s ease;
+}
+.app-shell.arena-focus .sidebar,
+.app-shell.arena-focus .sidebar.open {
+  transform:translateX(-100%); opacity:0; pointer-events:none;
+}
+.app-shell.arena-focus .main-area { margin-left:0; }
+.app-shell.arena-focus .arena-shell { height:100vh; }
+@media(prefers-reduced-motion:reduce){
+  .sidebar,.main-area{ transition:none; }
+}
+@media(max-width:900px){
+  .sidebar{ transform:translateX(-100%); }
+  .sidebar.open{ transform:translateX(0); }
+  .main-area{ margin-left:0; }
+}
+
+/* TOP BAR */
+.topbar {
+  position:sticky; top:0; z-index:50;
+  background:rgba(8,11,15,0.9); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 28px; gap:16px;
+}
+.topbar-title {
+  font-family:var(--display); font-weight:700; font-size:1.1rem;
+  letter-spacing:-0.01em;
+}
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.mobile-menu-btn {
+  display:none; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:8px; border:1px solid var(--line);
+  background:transparent; color:var(--text-dim); font-size:1.1rem;
+}
+@media(max-width:900px){ .mobile-menu-btn{ display:flex; } }
+.topbar-avatar {
+  width:34px; height:34px; border-radius:50%;
+  background:var(--green-muted); border:1px solid rgba(168,255,62,0.25);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:700; font-size:0.85rem; color:var(--green);
+}
+.connection-pill {
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-dim);
+}
+.connection-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--green); box-shadow:0 0 6px var(--green);
+}
+
+/* SCREENS (SPA panels) */
+.screen { display:none; padding:28px; flex:1; }
+.screen.active { display:flex; flex-direction:column; }
+
+/* ════════════════════════════════════════
+   SHARED UI ATOMS
+════════════════════════════════════════ */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  font-family:var(--sans); font-size:0.9rem; font-weight:600;
+  padding:11px 20px; border-radius:8px; border:1px solid transparent;
+  cursor:pointer;
+  transition:transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.btn:hover { transform:translateY(-1px); }
+.btn-green { background:var(--green); color:#080B0F; box-shadow:0 0 16px rgba(168,255,62,0.2); }
+.btn-green:hover { background:#bfff5a; box-shadow:0 0 24px rgba(168,255,62,0.35); }
+.btn-ghost { background:transparent; color:var(--text); border-color:var(--line); }
+.btn-ghost:hover { border-color:var(--line-2); background:var(--surface); }
+.btn-danger { background:transparent; color:var(--rose); border-color:rgba(248,113,113,0.3); }
+.btn-danger:hover { background:rgba(248,113,113,0.08); border-color:var(--rose); }
+.btn-block { width:100%; }
+.btn-lg { padding:14px 28px; font-size:1rem; }
+.btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+
+.section-label {
+  font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--green); margin-bottom:8px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-label::before { content:''; width:16px; height:1px; background:var(--green); }
+
+.panel {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:24px;
+}
+.panel-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+.panel-title { font-size:1rem; font-weight:700; margin-bottom:3px; }
+.panel-sub { font-size:0.82rem; color:var(--text-dim); }
+
+.chip {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--surface-2); border:1px solid var(--line);
+  border-radius:100px; padding:5px 12px;
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-mid);
+}
+
+.pill-group { display:flex; gap:8px; flex-wrap:wrap; }
+.pill {
+  padding:8px 16px; border-radius:8px; border:1px solid var(--line);
+  background:var(--surface-2); color:var(--text-dim);
+  font-size:0.85rem; font-weight:600; cursor:pointer;
+  transition:border-color 0.15s, color 0.15s, background 0.15s;
+}
+.pill:hover { border-color:var(--line-2); color:var(--text); }
+.pill.active {
+  border-color:var(--green); color:var(--green);
+  background:var(--green-muted);
+}
+
+.stat-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:12px; padding:20px;
+}
+.stat-val {
+  font-family:var(--display); font-weight:800; font-size:1.8rem;
+  letter-spacing:-0.03em; line-height:1;
+  display:flex; align-items:baseline; gap:4px;
+}
+.stat-val .unit { font-size:0.9rem; color:var(--text-dim); font-weight:600; }
+.stat-label { font-size:0.78rem; color:var(--text-dim); margin-top:6px; }
+
+/* Field input style */
+.field { margin-bottom:18px; }
+.field label {
+  display:block; font-family:var(--mono); font-size:0.67rem;
+  text-transform:uppercase; letter-spacing:0.1em;
+  color:var(--text-dim); margin-bottom:8px;
+}
+.field input, .field select {
+  width:100%; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:8px; padding:11px 14px; color:var(--text);
+  font-family:var(--sans); font-size:0.9rem;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+.field input:focus, .field select:focus {
+  outline:none; border-color:rgba(168,255,62,0.4);
+  box-shadow:0 0 0 3px rgba(168,255,62,0.07);
+}
+.field input::placeholder { color:var(--text-dim); }
+
+/* Spinner */
+@keyframes spin { to{transform:rotate(360deg);} }
+.spinner {
+  width:16px; height:16px; border:2px solid rgba(8,11,15,0.3);
+  border-top-color:currentColor; border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
+.spinner-large {
+  width:36px; height:36px; border-width:3px; border-top-color:var(--green);
+  border-color:rgba(168,255,62,0.2); border-top-color:var(--green);
+}
+
+/* Reveal animation */
+.reveal { opacity:0; transform:translateY(16px); transition:opacity 0.55s ease, transform 0.55s ease; }
+.reveal.in { opacity:1; transform:none; }
+
+/* Error state */
+.error-banner {
+  background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.2);
+  border-radius:10px; padding:12px 16px; font-size:0.85rem; color:var(--rose);
+  margin-bottom:16px; display:none;
+}
+.error-banner.visible { display:block; }
+
+/* Live pulse dot */
+.live-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 6px var(--green); flex-shrink:0;
+  animation:blink 1.8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Waveform bars (audio activity) */
+.waveform {
+  display:flex; align-items:center; gap:2px; height:16px;
+}
+.waveform .bar {
+  width:3px; border-radius:2px; background:var(--green);
+  transition:height 0.1s ease;
+}
+
+/* ════════════════════════════════════════
+   SCREEN: DASHBOARD
+════════════════════════════════════════ */
+#screen-dashboard {}
+.dashboard-header { margin-bottom:28px; }
+.dashboard-header h1 {
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(1.5rem,3vw,2rem); letter-spacing:-0.02em; margin-bottom:4px;
+}
+.dashboard-header p { color:var(--text-dim); font-size:0.9rem; }
+
+.stats-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;
+}
+@media(max-width:700px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
+
+.arena-section { margin-bottom:28px; }
+.arena-section h2 {
+  font-family:var(--display); font-size:1rem; font-weight:700;
+  margin-bottom:16px; color:var(--text-mid);
+  text-transform:uppercase; letter-spacing:0.06em;
+}
+.arena-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:900px){ .arena-cards{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:500px){ .arena-cards{ grid-template-columns:1fr; } }
+
+.arena-card {
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:14px; padding:22px; cursor:pointer;
+  transition:border-color 0.2s, transform 0.2s, background 0.2s;
+  position:relative; overflow:hidden;
+}
+.arena-card::before {
+  content:''; position:absolute; inset:0;
+  background:var(--green-muted); opacity:0;
+  transition:opacity 0.2s;
+}
+.arena-card:hover { border-color:rgba(168,255,62,0.3); transform:translateY(-2px); }
+.arena-card:hover::before { opacity:1; }
+.arena-card.soon { opacity:0.6; cursor:default; }
+.arena-card.soon:hover { transform:none; border-color:var(--line); }
+.arena-card.soon:hover::before { opacity:0; }
+
+.arena-card-icon { font-size:1.8rem; margin-bottom:14px; }
+.arena-card-name { font-size:0.95rem; font-weight:700; margin-bottom:4px; }
+.arena-card-desc { font-size:0.78rem; color:var(--text-dim); line-height:1.5; margin-bottom:12px; }
+.arena-card-meta {
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-dim);
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.arena-status {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.06em;
+  text-transform:uppercase; margin-bottom:10px;
+}
+.arena-status.live { color:var(--green); }
+.arena-status.soon { color:var(--text-dim); }
+
+.bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:700px){ .bottom-grid{ grid-template-columns:1fr; } }
+
+/* Recent activity list */
+.activity-list { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+.activity-item {
+  display:flex; align-items:center; gap:14px;
+  padding:14px 16px; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:10px;
+}
+.activity-icon {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--surface); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+}
+.activity-body { flex:1; min-width:0; }
+.activity-name { font-size:0.88rem; font-weight:600; }
+.activity-meta { font-size:0.75rem; color:var(--text-dim); margin-top:2px; }
+.activity-score {
+  font-family:var(--display); font-weight:800; font-size:1.1rem;
+  color:var(--green); flex-shrink:0;
+}
+
+/* Progress chart placeholder */
+.progress-chart-wrap { margin-top:16px; }
+.progress-chart-svg { width:100%; height:80px; }
+
+/* ════════════════════════════════════════
+   SCREEN: GD SETUP
+════════════════════════════════════════ */
+#screen-setup {
+  max-width:1100px;
+}
+.setup-layout {
+  display:grid; grid-template-columns:1.15fr 0.85fr; gap:20px;
+  align-items:start;
+}
+@media(max-width:860px){ .setup-layout{ grid-template-columns:1fr; } }
+
+.setup-left { display:flex; flex-direction:column; gap:16px; }
+.setup-right { position:sticky; top:88px; display:flex; flex-direction:column; gap:16px; }
+
+.room-type-toggle {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.room-type-card {
+  padding:18px; border-radius:12px; border:1px solid var(--line);
+  background:var(--surface-2); cursor:pointer;
+  transition:border-color 0.2s, background 0.2s;
+}
+.room-type-card.active {
+  border-color:var(--green); background:var(--green-muted);
+}
+.room-type-card:hover:not(.active) { border-color:var(--line-2); }
+.room-type-icon { font-size:1.3rem; margin-bottom:8px; }
+.room-type-name { font-size:0.9rem; font-weight:700; margin-bottom:2px; }
+.room-type-desc { font-size:0.75rem; color:var(--text-dim); }
+
+/* Private room reveal */
+.private-reveal {
+  display:none; overflow:hidden;
+  animation:slideDown 0.25s ease forwards;
+}
+.private-reveal.visible { display:block; }
+@keyframes slideDown {
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.private-sub-toggle {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;
+}
+.private-sub-btn {
+  padding:10px; border-radius:8px; border:1px solid var(--line);
+  background:transparent; color:var(--text-dim); font-size:0.85rem; font-weight:600;
+  transition:border-color 0.15s, color 0.15s, background 0.15s;
+}
+.private-sub-btn.active {
+  border-color:var(--green); color:var(--green); background:var(--green-muted);
+}
+
+.room-code-display {
+  display:flex; align-items:center; gap:10px; margin-top:10px;
+  padding:14px 16px; background:var(--bg); border:1px solid var(--line);
+  border-radius:10px;
+}
+.room-code-val {
+  flex:1; font-family:var(--mono); font-size:1.1rem; letter-spacing:0.12em;
+  font-weight:700; color:var(--green);
+}
+.copy-btn {
+  padding:6px 12px; border-radius:6px; border:1px solid var(--line);
+  background:var(--surface); color:var(--text-dim); font-size:0.8rem;
+  transition:border-color 0.15s, color 0.15s;
+}
+.copy-btn:hover { border-color:var(--green); color:var(--green); }
+
+/* Mic check waveform */
+.mic-check {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; background:var(--bg); border:1px solid var(--line);
+  border-radius:10px; margin-top:8px;
+}
+.mic-status-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.mic-check-bars {
+  display:flex; gap:3px; align-items:center; height:18px; flex:1;
+}
+.mic-check-bars .bar {
+  width:3px; border-radius:2px; background:var(--line); height:4px;
+  transition:height 0.1s ease, background 0.1s ease;
+}
+.mic-active .bar { background:var(--green); }
+
+/* How it works sidebar */
+.how-steps-mini { display:flex; flex-direction:column; gap:0; }
+.how-step-mini {
+  display:flex; gap:14px; align-items:flex-start;
+  padding:14px 0; border-bottom:1px solid var(--line);
+}
+.how-step-mini:last-child { border-bottom:none; }
+.how-step-num {
+  width:24px; height:24px; border-radius:50%;
+  background:var(--surface-2); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-dim);
+  flex-shrink:0; margin-top:1px;
+}
+.how-step-mini h4 { font-size:0.85rem; font-weight:700; margin-bottom:2px; }
+.how-step-mini p { font-size:0.78rem; color:var(--text-dim); }
+
+/* ════════════════════════════════════════
+   SCREEN: MATCHMAKING
+════════════════════════════════════════ */
+#screen-matchmaking {
+  align-items:center; justify-content:center; text-align:center;
+  min-height:calc(100vh - 64px);
+}
+.matchmaking-inner { max-width:600px; width:100%; }
+.match-title {
+  font-family:var(--display); font-weight:900;
+  font-size:clamp(1.5rem,3vw,2.2rem); letter-spacing:-0.03em;
+  margin-bottom:12px;
+}
+.match-sub { color:var(--text-dim); margin-bottom:40px; }
+
+/* Ring of avatars */
+.match-ring {
+  position:relative; width:320px; height:320px; margin:0 auto 36px;
+}
+.match-ring-bg {
+  position:absolute; inset:0; border-radius:50%;
+  border:1px solid var(--line);
+  background:radial-gradient(circle at center, var(--surface) 0%, var(--bg) 70%);
+}
+.match-ring-inner {
+  position:absolute; inset:20%; border-radius:50%;
+  border:1px dashed var(--line-2);
+}
+.match-ring-center {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  text-align:center;
+}
+.match-ring-count {
+  font-family:var(--display); font-weight:900; font-size:2.4rem;
+  color:var(--green); letter-spacing:-0.04em; display:block;
+}
+.match-ring-label {
+  font-family:var(--mono); font-size:0.68rem; color:var(--text-dim);
+  letter-spacing:0.08em; text-transform:uppercase;
+}
+
+/* Positioned avatar nodes */
+.match-node {
+  position:absolute; width:60px; text-align:center;
+  transform:translate(-50%,-50%); opacity:0;
+  transition:opacity 0.4s ease, transform 0.4s ease;
+}
+.match-node.in { opacity:1; }
+.match-node-avatar {
+  width:44px; height:44px; border-radius:50%; margin:0 auto;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:700; font-size:0.8rem;
+  color:#fff; box-shadow:0 0 0 2px var(--bg), 0 0 0 3px var(--line);
+}
+.match-node.you .match-node-avatar {
+  box-shadow:0 0 0 2px var(--bg), 0 0 0 3px var(--green);
+}
+.match-node-name {
+  font-family:var(--mono); font-size:0.6rem; color:var(--text-dim);
+  margin-top:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* Searching animation dots */
+.searching-dots { display:inline-flex; gap:5px; margin-left:4px; }
+.searching-dots span {
+  width:5px; height:5px; border-radius:50%; background:var(--green);
+  animation:dotBounce 1.2s ease-in-out infinite;
+}
+.searching-dots span:nth-child(2) { animation-delay:0.2s; }
+.searching-dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes dotBounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+/* Topic reveal */
+.topic-reveal {
+  display:none; margin-top:24px;
+  background:var(--surface); border:1px solid rgba(168,255,62,0.2);
+  border-radius:14px; padding:28px; text-align:center;
+  animation:fadeIn 0.5s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.topic-reveal.visible { display:block; }
+.topic-reveal-label {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--green); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.topic-reveal-label::before { content:''; width:12px; height:1px; background:var(--green); }
+.topic-reveal-label::after  { content:''; width:12px; height:1px; background:var(--green); }
+.topic-text {
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(1.2rem,2.5vw,1.7rem);
+  line-height:1.2; letter-spacing:-0.02em; color:var(--text);
+}
+.countdown-ring {
+  width:80px; height:80px; margin:20px auto 0;
+  position:relative;
+}
+.countdown-ring svg { transform:rotate(-90deg); }
+.countdown-ring circle.track {
+  fill:none; stroke:var(--line); stroke-width:4;
+}
+.countdown-ring circle.progress {
+  fill:none; stroke:var(--green); stroke-width:4;
+  stroke-dasharray:220; stroke-dashoffset:0;
+  transition:stroke-dashoffset 1s linear;
+}
+.countdown-num {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:var(--display); font-weight:900; font-size:1.6rem;
+  color:var(--green); letter-spacing:-0.04em;
+}
+
+/* ════════════════════════════════════════
+   SCREEN: LIVE GD ARENA
+════════════════════════════════════════ */
+#screen-arena {
+  padding:0; background:var(--bg);
+}
+.arena-shell {
+  display:flex; height:calc(100vh - 64px);
+  flex-direction:column;
+}
+
+/* Arena top bar */
+.arena-topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 24px; border-bottom:1px solid var(--line);
+  background:var(--surface); flex-shrink:0; flex-wrap:wrap; gap:12px;
+}
+.arena-info { display:flex; align-items:center; gap:16px; }
+.arena-name {
+  font-family:var(--display); font-weight:800; font-size:1.05rem;
+  display:flex; align-items:center; gap:10px;
+}
+.live-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(168,255,62,0.1); border:1px solid rgba(168,255,62,0.25);
+  border-radius:100px; padding:3px 10px;
+  font-family:var(--mono); font-size:0.62rem; color:var(--green); letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+.live-chip.preparation {
+  background:rgba(252,211,77,0.08); border-color:rgba(252,211,77,0.3);
+  color:var(--amber);
+}
+.live-chip.preparation .live-dot {
+  background:var(--amber); box-shadow:0 0 8px var(--amber);
+}
+.arena-timer {
+  font-family:var(--mono); font-size:1.1rem; color:var(--green);
+  letter-spacing:0.05em; font-weight:700;
+}
+.arena-stats-bar { display:flex; align-items:center; gap:20px; }
+.arena-stat-item {
+  font-family:var(--mono); font-size:0.72rem; color:var(--text-dim);
+  display:flex; align-items:center; gap:6px;
+}
+
+/* Arena main content */
+.arena-content {
+  display:grid; grid-template-columns:280px 1fr; flex:1; overflow:hidden;
+}
+@media(max-width:900px){ .arena-content{ grid-template-columns:1fr; } }
+
+/* Topic panel */
+.topic-panel {
+  border-right:1px solid var(--line); padding:24px;
+  display:flex; flex-direction:column; gap:16px;
+  background:var(--surface); overflow-y:auto;
+}
+.topic-label {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--green);
+  display:flex; align-items:center; gap:6px;
+}
+.topic-label::before { content:''; width:10px; height:1px; background:var(--green); }
+.topic-heading {
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(1.1rem,2vw,1.5rem); line-height:1.25; letter-spacing:-0.02em;
+}
+.speaking-order { margin-top:auto; }
+.speaking-order-label {
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--text-dim); margin-bottom:12px;
+}
+.speaking-item {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 0; border-bottom:1px solid var(--line);
+  font-size:0.82rem;
+}
+.speaking-item:last-child { border-bottom:none; }
+.speaking-rank {
+  font-family:var(--mono); font-size:0.65rem; color:var(--text-dim);
+  min-width:16px;
+}
+.speaking-alias { flex:1; font-weight:600; }
+.speaking-bars { display:flex; gap:2px; align-items:center; height:14px; }
+.speaking-bars .b {
+  width:3px; height:4px; border-radius:1px; background:var(--line);
+}
+.speaking-bars.talking .b { background:var(--green); }
+
+/* Participants grid */
+.participants-grid-wrap {
+  padding:24px; display:flex; align-items:center; justify-content:center;
+  overflow:hidden; background:var(--bg);
+}
+.participants-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+  width:100%; max-width:700px;
+}
+@media(max-width:700px){ .participants-grid{ grid-template-columns:repeat(2,1fr); } }
+
+/* Participant avatar card */
+.participant-card {
+  background:var(--surface); border:2px solid var(--line);
+  border-radius:16px; padding:20px 16px; text-align:center;
+  transition:border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  position:relative; overflow:hidden;
+}
+.participant-card.speaking {
+  border-color:var(--green);
+  box-shadow:0 0 0 1px rgba(168,255,62,0.15), 0 0 24px rgba(168,255,62,0.12);
+  background:rgba(168,255,62,0.03);
+}
+.participant-card.empty {
+  opacity:0.3; border-style:dashed;
+}
+
+/* Reference-style illustrated participant portraits */
+.avatar-portrait {
+  width:100%; height:128px; border-radius:10px; margin:0 auto 12px;
+  position:relative; overflow:hidden; display:flex;
+  align-items:flex-end; justify-content:center;
+  background:#0b0f12;
+  border:1px solid rgba(255,255,255,0.05);
+  transition:border-color 0.2s;
+}
+.speaking .avatar-portrait {
+  border-color:var(--green);
+  box-shadow:0 0 12px rgba(168,255,62,0.2);
+}
+.avatar-portrait img {
+  width:100%; height:100%; display:block;
+  object-fit:cover; object-position:center 24%;
+}
+.participant-card.empty .avatar-portrait {
+  background:linear-gradient(145deg, #0b0f12, #10151a);
+}
+
+.p-alias {
+  font-size:0.88rem; font-weight:700; margin-bottom:6px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.p-alias.you { color:var(--green); }
+.p-speaking-indicator {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  font-family:var(--mono); font-size:0.62rem; color:var(--text-dim);
+  min-height:16px;
+}
+.p-waveform {
+  display:flex; gap:2px; align-items:center; height:14px;
+}
+.p-waveform .bar {
+  width:3px; border-radius:2px; background:var(--line);
+  transition:height 0.1s ease, background 0.1s;
+}
+.speaking .p-waveform .bar { background:var(--green); }
+.speaking .p-speaking-indicator { color:var(--green); }
+
+/* Arena bottom bar */
+.arena-bottom {
+  border-top:1px solid var(--line); background:var(--surface);
+  padding:16px 24px; display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:14px; flex-shrink:0;
+}
+.arena-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.arena-ctrl {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  min-width:60px;
+}
+.arena-ctrl-btn {
+  width:48px; height:48px; border-radius:50%; border:1px solid var(--line);
+  background:var(--surface-2); color:var(--text); font-size:1.1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:background 0.15s, border-color 0.15s, color 0.15s;
+}
+.arena-ctrl-btn:hover { background:var(--surface-3); }
+.arena-ctrl-btn.muted { background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.3); color:var(--rose); }
+.arena-ctrl-btn.leave { background:rgba(248,113,113,0.15); border-color:var(--rose); color:var(--rose); }
+.arena-ctrl-btn.leave:hover { background:rgba(248,113,113,0.25); }
+.arena-ctrl-btn.complete {
+  background:rgba(168,255,62,0.1); border-color:rgba(168,255,62,0.35);
+  color:var(--green);
+}
+.arena-ctrl-btn.complete:hover { background:rgba(168,255,62,0.18); }
+.arena-ctrl-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.arena-ctrl-label {
+  font-family:var(--mono); font-size:0.62rem; color:var(--text-dim);
+  letter-spacing:0.05em; text-transform:uppercase;
+}
+
+.arena-status-bar { display:flex; align-items:center; gap:12px; }
+.call-status { font-size:0.82rem; color:var(--text-dim); }
+.resume-btn {
+  padding:7px 14px; border-radius:7px; border:1px solid rgba(252,211,77,0.3);
+  background:rgba(252,211,77,0.08); color:var(--amber);
+  font-size:0.82rem; display:none;
+}
+.resume-btn.visible { display:inline-flex; }
+
+/* ════════════════════════════════════════
+   SCREEN: PEER RATING
+════════════════════════════════════════ */
+#screen-feedback {
+  max-width:900px;
+}
+.feedback-header { margin-bottom:28px; }
+.feedback-header h1 {
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(1.4rem,3vw,1.9rem); letter-spacing:-0.02em;
+}
+.feedback-header p { color:var(--text-dim); margin-top:6px; font-size:0.9rem; }
+
+.rating-table-wrap { overflow-x:auto; }
+.rating-table {
+  width:100%; border-collapse:collapse; min-width:600px;
+}
+.rating-table th {
+  padding:10px 14px; text-align:left;
+  font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--text-dim); white-space:nowrap;
+  border-bottom:1px solid var(--line);
+}
+.rating-table td {
+  padding:12px 14px; border-bottom:1px solid var(--line);
+  vertical-align:middle;
+}
+.rating-table tr:last-child td { border-bottom:none; }
+.rating-table tr.self-row { opacity:0.4; }
+.ratee-cell { display:flex; align-items:center; gap:10px; }
+.ratee-avatar {
+  width:32px; height:32px; border-radius:50%;
+  background:var(--surface-2); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:700; flex-shrink:0;
+}
+.ratee-alias { font-size:0.88rem; font-weight:600; }
+.star-row { display:flex; gap:3px; }
+.star {
+  width:22px; height:22px; font-size:1rem; cursor:pointer;
+  color:var(--line); transition:color 0.1s, transform 0.1s;
+  display:flex; align-items:center; justify-content:center;
+}
+.star:hover, .star.lit { color:var(--amber); }
+.star:hover { transform:scale(1.15); }
+tr.self-row .star { cursor:not-allowed; }
+
+/* ════════════════════════════════════════
+   SCREEN: PERFORMANCE REPORT
+════════════════════════════════════════ */
+#screen-report {
+  max-width:960px;
+}
+.report-header { margin-bottom:28px; }
+.report-header h1 {
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(1.4rem,3vw,1.9rem); letter-spacing:-0.02em;
+}
+.report-header p { color:var(--text-dim); margin-top:6px; font-size:0.9rem; }
+
+.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:700px){ .report-grid{ grid-template-columns:1fr; } }
+
+.overall-rating {
+  display:flex; align-items:center; gap:16px; margin-bottom:16px;
+}
+.overall-score {
+  font-family:var(--display); font-weight:900; font-size:3.2rem;
+  color:var(--green); letter-spacing:-0.05em; line-height:1;
+}
+.overall-label { font-size:0.85rem; color:var(--text-dim); margin-top:4px; }
+.overall-verdict { font-size:1rem; font-weight:700; }
+
+/* Pentagon radar chart */
+.radar-wrap { display:flex; justify-content:center; padding:10px 0; }
+.radar-svg { width:180px; height:180px; }
+
+/* Metric bars */
+.metric-bars { display:flex; flex-direction:column; gap:10px; }
+.metric-row { display:flex; flex-direction:column; gap:5px; }
+.metric-header { display:flex; justify-content:space-between; font-size:0.82rem; }
+.metric-name { color:var(--text-mid); }
+.metric-val { font-weight:700; color:var(--text); }
+.metric-track {
+  height:5px; background:var(--line); border-radius:4px; overflow:hidden;
+}
+.metric-fill {
+  height:100%; background:var(--green); border-radius:4px;
+  transform:scaleX(0); transform-origin:left;
+  transition:transform 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+.metric-fill.animated { transform:scaleX(1); }
+
+/* AI insights */
+.insights-list { list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.insights-list li {
+  display:flex; gap:10px; align-items:flex-start;
+  font-size:0.85rem; color:var(--text-dim); line-height:1.5;
+}
+.insights-list li::before {
+  content:'→'; color:var(--green); flex-shrink:0;
+  font-family:var(--mono); font-size:0.8rem; margin-top:1px;
+}
+
+/* Demo data note */
+.demo-note {
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--mono); font-size:0.65rem; color:var(--text-dim);
+  background:var(--surface-2); border:1px solid var(--line);
+  border-radius:100px; padding:3px 10px; letter-spacing:0.06em;
+}
+
+/* Recent sessions */
+.recent-sessions { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.recent-row {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 14px; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:9px;
+}
+.recent-arena { font-size:0.85rem; font-weight:600; flex:1; }
+.recent-topic { font-size:0.76rem; color:var(--text-dim); }
+.recent-score {
+  font-family:var(--display); font-weight:800; font-size:1rem; color:var(--green);
+}
+
+/* ════════════════════════════════════════
+   SCREEN: HISTORY / PROGRESS
+════════════════════════════════════════ */
+#screen-history { max-width:800px; }
+.empty-state {
+  text-align:center; padding:60px 20px;
+  border:1px dashed var(--line); border-radius:16px;
+  color:var(--text-dim);
+}
+.empty-state-icon { font-size:3rem; margin-bottom:16px; }
+.empty-state h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
+.empty-state p { font-size:0.87rem; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-logo" onclick="handleLogoNavigation(event)">
+      <div class="logo-mark">
+        <img src="/static/skillswap-mark.svg" alt="">
+      </div>
+      SkillSwap
+    </a>
+
+    <div class="sidebar-user">
+      <div class="user-alias">
+        <span id="sidebar-alias">Anonymous</span>
+        <span class="anon-badge" id="anon-badge">Anon</span>
+      </div>
+      <div class="user-meta" id="sidebar-meta">Guest session</div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-group-label">Menu</div>
+        <button class="nav-item active" id="nav-dashboard" onclick="showScreen('dashboard')">
+          <span class="nav-item-ic">⊞</span> Dashboard
+        </button>
+        <button class="nav-item" id="nav-history" onclick="showScreen('history')">
+          <span class="nav-item-ic">◷</span> History
+        </button>
+        <button class="nav-item" id="nav-reports" onclick="showScreen('report')">
+          <span class="nav-item-ic">📊</span> Reports
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="logout-btn" onclick="handleLogout()" id="logout-btn">
+        <span>↩</span> Log out
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN AREA ══ -->
+  <div class="main-area">
+    <!-- TOP BAR -->
+    <div class="topbar" id="main-topbar">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()" id="mobile-menu-btn" aria-label="Menu">☰</button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="connection-pill" id="conn-pill" style="display:none;">
+          <div class="connection-dot"></div>
+          <span id="conn-label">Connected</span>
+        </div>
+        <div class="topbar-avatar" id="topbar-avatar">?</div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: DASHBOARD ══ -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="dashboard-header reveal">
+        <h1>Welcome back, <span id="dash-alias" style="color:var(--green);">Anonymous</span></h1>
+        <p>Pick an arena and start practising. Your next session is one click away.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card reveal">
+          <div class="stat-val"><span id="stat-sessions">0</span></div>
+          <div class="stat-label">Sessions Completed</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-val"><span id="stat-rating">—</span><span class="unit">★</span></div>
+          <div class="stat-label">Average Peer Rating</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-val"><span id="stat-clarity">—</span><span class="unit">/5</span></div>
+          <div class="stat-label">Avg. Clarity</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-val"><span id="stat-week">0</span></div>
+          <div class="stat-label">GDs This Week</div>
+        </div>
+      </div>
+
+      <div class="arena-section">
+        <h2>Choose Your Arena</h2>
+        <div class="arena-cards">
+          <div class="arena-card reveal" id="dash-arena-gd" onclick="startGDFlow()">
+            <div class="arena-status live"><div class="live-dot"></div> Live</div>
+            <div class="arena-card-icon">💬</div>
+            <div class="arena-card-name">Group Discussion</div>
+            <div class="arena-card-desc">Talk, Listen, Lead.</div>
+            <div class="arena-card-meta">
+              <span id="gd-seats-info">3–6 members</span>
+            </div>
+          </div>
+          <div class="arena-card soon reveal">
+            <div class="arena-status soon">⋯ Coming Soon</div>
+            <div class="arena-card-icon">⚖️</div>
+            <div class="arena-card-name">Debate Arena</div>
+            <div class="arena-card-desc">Argue, Persuade, Win.</div>
+            <div class="arena-card-meta">4–6 members</div>
+          </div>
+          <div class="arena-card soon reveal">
+            <div class="arena-status soon">⋯ Coming Soon</div>
+            <div class="arena-card-icon">⌨️</div>
+            <div class="arena-card-name">Coding Interview</div>
+            <div class="arena-card-desc">Code, Solve, Optimise.</div>
+            <div class="arena-card-meta">1–2 members</div>
+          </div>
+          <div class="arena-card soon reveal">
+            <div class="arena-status soon">⋯ Coming Soon</div>
+            <div class="arena-card-icon">🎙️</div>
+            <div class="arena-card-name">Mock Interview</div>
+            <div class="arena-card-desc">Prepare, Perform, Ace.</div>
+            <div class="arena-card-meta">1-on-1</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="panel reveal">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Recent Activity</div>
+              <div class="panel-sub">Your last few sessions</div>
+            </div>
+          </div>
+          <div class="activity-list" id="activity-list">
+            <div style="color:var(--text-dim);font-size:0.85rem;padding:12px 0;">Loading sessions…</div>
+          </div>
+        </div>
+
+        <div class="panel reveal">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Performance Overview</div>
+              <div class="panel-sub">Rated GD history</div>
+            </div>
+          </div>
+          <div class="progress-chart-wrap">
+            <svg class="progress-chart-svg" id="progress-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#A8FF3E" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#A8FF3E" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="chart-area" fill="url(#chartGrad)" d=""/>
+              <path id="chart-line" fill="none" stroke="#A8FF3E" stroke-width="2" stroke-linecap="round" d=""/>
+            </svg>
+          </div>
+          <div id="progress-empty" style="display:none;color:var(--text-dim);font-size:0.85rem;padding:18px 0;">Complete more rated GDs to see your progress.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: GD SETUP ══ -->
+    <div class="screen" id="screen-setup">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <button class="btn btn-ghost" onclick="showScreen('dashboard')" style="padding:8px 14px;font-size:0.85rem;">← Back</button>
+        <div>
+          <div class="section-label" style="margin-bottom:2px;">Arena</div>
+          <div style="font-family:var(--display);font-weight:800;font-size:1.3rem;letter-spacing:-0.02em;">
+            Group Discussion
+            <span style="font-size:0.75rem;color:var(--text-dim);font-family:var(--mono);font-weight:400;margin-left:8px;">Talk, Listen, Lead.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-layout">
+        <div class="setup-left">
+          <div class="panel">
+            <div class="panel-title">Room Type</div>
+            <div class="panel-sub" style="margin-bottom:16px;">Choose how you want to join</div>
+            <div class="room-type-toggle" id="room-type-toggle">
+              <div class="room-type-card active" id="rt-public" onclick="selectRoomType('public')">
+                <div class="room-type-icon">🌐</div>
+                <div class="room-type-name">Public Room</div>
+                <div class="room-type-desc">Join a random room with other participants</div>
+              </div>
+              <div class="room-type-card" id="rt-private" onclick="selectRoomType('private')">
+                <div class="room-type-icon">🔒</div>
+                <div class="room-type-name">Private Room</div>
+                <div class="room-type-desc">Join with a room code</div>
+              </div>
+            </div>
+
+            <!-- PRIVATE ROOM REVEAL -->
+            <div class="private-reveal" id="private-reveal">
+              <div style="margin-top:16px;padding:16px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;">
+                <div class="private-sub-toggle">
+                  <button class="private-sub-btn active" id="psb-create" onclick="selectPrivateMode('create')">Create Room</button>
+                  <button class="private-sub-btn" id="psb-join" onclick="selectPrivateMode('join')">Join Room</button>
+                </div>
+
+                <!-- CREATE: show generated code -->
+                <div id="private-create-section">
+                  <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:10px;">Share this code with your group:</div>
+                  <div class="room-code-display">
+                    <div class="room-code-val" id="generated-room-code">—</div>
+                    <button class="copy-btn" onclick="copyRoomCode()" id="copy-code-btn">Copy</button>
+                  </div>
+                  <div style="font-size:0.75rem;color:var(--text-dim);margin-top:10px;">
+                    ⚠️ Private rooms require backend room-code support (not yet implemented). Functionality is frontend-only for demo.
+                  </div>
+                </div>
+
+                <!-- JOIN: show input -->
+                <div id="private-join-section" style="display:none;">
+                  <div class="field" style="margin-bottom:0;">
+                    <label for="room-code-input">Enter Room Code</label>
+                    <input type="text" id="room-code-input" placeholder="e.g. XKCD-42" maxlength="10" style="letter-spacing:0.12em;font-family:var(--mono);">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">Preferences</div>
+            <div class="panel-sub" style="margin-bottom:16px;">Customise your session</div>
+
+            <div class="field">
+              <label>Difficulty</label>
+              <div class="pill-group" id="difficulty-group">
+                <div class="pill" onclick="selectPill(this,'difficulty-group')" data-val="beginner">Beginner</div>
+                <div class="pill active" onclick="selectPill(this,'difficulty-group')" data-val="intermediate">Intermediate</div>
+                <div class="pill" onclick="selectPill(this,'difficulty-group')" data-val="advanced">Advanced</div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label>Category <span style="color:var(--text-dim);font-weight:400;">(Optional)</span></label>
+              <div class="pill-group" id="category-group">
+                <div class="pill active" onclick="selectPill(this,'category-group')" data-val="general">General</div>
+                <div class="pill" onclick="selectPill(this,'category-group')" data-val="corporate">Corporate</div>
+                <div class="pill" onclick="selectPill(this,'category-group')" data-val="current-affairs">Current Affairs</div>
+                <div class="pill" onclick="selectPill(this,'category-group')" data-val="technology">Technology</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">Mic Check</div>
+            <div class="panel-sub" style="margin-bottom:12px;">Verify your microphone is working</div>
+            <div class="mic-check" id="setup-mic-check">
+              <div class="mic-status-dot" id="mic-dot" style="background:var(--text-dim);"></div>
+              <span style="font-size:0.85rem;color:var(--text-dim);" id="mic-label">Checking mic…</span>
+              <div class="mic-check-bars" id="setup-mic-bars">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;">
+              <div class="field" style="margin-bottom:0;">
+                <label>Your Alias</label>
+                <div style="display:flex;gap:8px;">
+                  <input type="text" id="setup-alias" placeholder="BoldNova1" maxlength="14" style="flex:1;">
+                  <button onclick="shuffleSetupAlias()" style="padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--text-dim);font-size:1.1rem;transition:border-color 0.15s,color 0.15s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--line)';this.style.color='var(--text-dim)'">⟳</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-right">
+          <div class="panel">
+            <div class="panel-title">How It Works</div>
+            <div class="panel-sub" style="margin-bottom:14px;">What happens after you find a room</div>
+            <div class="how-steps-mini">
+              <div class="how-step-mini">
+                <div class="how-step-num">1</div>
+                <div>
+                  <h4>Find participants</h4>
+                  <p>We'll match you with 5 other participants in a public room.</p>
+                </div>
+              </div>
+              <div class="how-step-mini">
+                <div class="how-step-num">2</div>
+                <div>
+                  <h4>A random topic is selected</h4>
+                  <p>The topic is revealed only after the room is ready.</p>
+                </div>
+              </div>
+              <div class="how-step-mini">
+                <div class="how-step-num">3</div>
+                <div>
+                  <h4>Prepare, then discuss (15 min)</h4>
+                  <p>Review the topic for 2 minutes, then join the 13-minute anonymous audio discussion.</p>
+                </div>
+              </div>
+              <div class="how-step-mini">
+                <div class="how-step-num">4</div>
+                <div>
+                  <h4>Rate peers &amp; get your report</h4>
+                  <p>Give honest feedback. Get your performance breakdown.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="error-banner" id="setup-error"></div>
+            <div class="panel-title" style="margin-bottom:4px;">Find a Room</div>
+            <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:16px;">
+              You'll get a random topic once the room is ready.
+            </div>
+            <div id="setup-sessions-info" style="margin-bottom:14px;"></div>
+            <button class="btn btn-green btn-block btn-lg" id="find-room-btn" onclick="findRoom()">
+              Find a Room
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: MATCHMAKING ══ -->
+    <div class="screen" id="screen-matchmaking">
+      <div class="matchmaking-inner">
+        <div class="match-title" id="match-title">
+          Finding participants<span class="searching-dots"><span></span><span></span><span></span></span>
+        </div>
+        <div class="match-sub" id="match-sub">Please wait while we find other participants for you</div>
+
+        <div class="match-ring">
+          <div class="match-ring-bg"></div>
+          <div class="match-ring-inner"></div>
+          <div class="match-ring-center">
+            <span class="match-ring-count" id="match-count">0</span>
+            <span class="match-ring-label">of 6</span>
+          </div>
+          <!-- nodes injected by JS -->
+        </div>
+
+        <div class="topic-reveal" id="topic-reveal">
+          <div class="topic-reveal-label">Topic Revealed</div>
+          <div class="topic-text" id="reveal-topic">—</div>
+          <div class="countdown-ring">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle class="track" cx="40" cy="40" r="35"/>
+              <circle class="progress" id="countdown-circle" cx="40" cy="40" r="35"/>
+            </svg>
+            <div class="countdown-num" id="countdown-num">3</div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;">
+          <button class="btn btn-ghost" id="cancel-match-btn" onclick="cancelMatchmaking()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: LIVE GD ARENA ══ -->
+    <div class="screen" id="screen-arena">
+      <div class="arena-shell">
+        <!-- Arena top bar -->
+        <div class="arena-topbar">
+          <div class="arena-info">
+            <div class="arena-name">
+              <span>Group Discussion</span>
+              <div class="live-chip" id="arena-phase-chip"><div class="live-dot"></div> <span id="arena-phase-label">LIVE</span></div>
+            </div>
+          </div>
+          <div class="arena-timer" id="arena-timer">02:00</div>
+          <div class="arena-stats-bar">
+            <div class="arena-stat-item">
+              <span>👥</span>
+              <span id="arena-participant-count">0/6</span>
+            </div>
+            <div class="arena-stat-item" id="arena-conn-status">
+              <span>⚡</span>
+              <span id="arena-status-text">Connecting…</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arena main -->
+        <div class="arena-content">
+          <!-- Topic panel -->
+          <div class="topic-panel">
+            <div>
+              <div class="topic-label">Topic Revealed</div>
+              <div class="topic-heading" id="arena-topic">—</div>
+            </div>
+            <div class="speaking-order">
+              <div class="speaking-order-label">Speaking Order</div>
+              <div id="speaking-order-list">
+                <!-- injected by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Participants grid -->
+          <div class="participants-grid-wrap">
+            <div class="participants-grid" id="participants-grid">
+              <!-- 6 slots injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Arena bottom bar -->
+        <div class="arena-bottom">
+          <div class="arena-controls">
+            <div class="arena-ctrl">
+              <button class="arena-ctrl-btn" id="mute-btn" onclick="toggleMute()" title="Mute / Unmute">
+                🎙️
+              </button>
+              <span class="arena-ctrl-label" id="mute-label">Audio</span>
+            </div>
+            <div class="arena-ctrl">
+              <button class="arena-ctrl-btn leave" id="leave-btn" onclick="confirmLeaveEarly()" title="Leave Early">
+                📵
+              </button>
+              <span class="arena-ctrl-label">Leave Early</span>
+            </div>
+            <div class="arena-ctrl" id="complete-session-control" style="display:none;">
+              <button class="arena-ctrl-btn" id="raise-hand-btn" title="Raise Hand" onclick="raiseHand()">
+                ✋
+              </button>
+              <span class="arena-ctrl-label">Hand</span>
+            </div>
+            <div class="arena-ctrl">
+              <button class="arena-ctrl-btn complete" id="complete-session-btn" title="Complete Session" onclick="completeSession()" disabled>
+                ✓
+              </button>
+              <span class="arena-ctrl-label">Complete</span>
+            </div>
+          </div>
+
+          <div class="arena-status-bar">
+            <button class="resume-btn" id="resume-audio-btn" onclick="resumeAudio()">Resume Audio ▶</button>
+            <div class="call-status" id="call-status">Ready to connect.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: PEER RATING ══ -->
+    <div class="screen" id="screen-feedback">
+      <div class="feedback-header">
+        <h1>Rate Participants</h1>
+        <p>Rate every other participant honestly. Your ratings are anonymous.</p>
+        <p style="margin-top:6px;font-size:0.8rem;font-family:var(--mono);color:var(--green);">You cannot rate yourself.</p>
+      </div>
+      <div class="panel">
+        <div class="error-banner" id="feedback-error"></div>
+        <div class="rating-table-wrap">
+          <table class="rating-table" id="rating-table">
+            <thead>
+              <tr>
+                <th>Participant</th>
+                <th>Clarity</th>
+                <th>Listening</th>
+                <th>Relevance</th>
+                <th>Confidence</th>
+                <th>Leadership</th>
+              </tr>
+            </thead>
+            <tbody id="rating-tbody">
+              <tr><td colspan="6" style="color:var(--text-dim);padding:20px 0;">Loading participants…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+          <button class="btn btn-green btn-lg" id="submit-ratings-btn" onclick="submitRatings()">
+            Submit Ratings
+          </button>
+        </div>
+        <div style="margin-top:10px;text-align:right;font-size:0.78rem;color:var(--text-dim);">
+          Your feedback helps everyone grow.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: PERFORMANCE REPORT ══ -->
+    <div class="screen" id="screen-report">
+      <div class="report-header">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <button class="btn btn-ghost" onclick="showScreen('dashboard')" style="padding:8px 14px;font-size:0.85rem;">← Dashboard</button>
+          <span class="demo-note">Persisted peer feedback</span>
+        </div>
+        <h1>Your Report</h1>
+        <p>Here's how you performed in this session.</p>
+      </div>
+
+      <div class="report-grid">
+        <!-- Overall + Radar -->
+        <div class="panel" style="grid-row:span 1;">
+          <div class="panel-title" style="margin-bottom:16px;">Overall Rating</div>
+          <div class="overall-rating">
+            <div>
+              <div class="overall-score" id="report-score">—</div>
+              <div class="overall-verdict" id="report-verdict">—</div>
+              <div class="overall-label">out of 5.0</div>
+              <div class="overall-label" id="report-feedback-count">Awaiting peer feedback</div>
+            </div>
+            <div class="radar-wrap">
+              <svg class="radar-svg" id="radar-svg" viewBox="-90 -90 180 180">
+                <polygon id="radar-bg" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <polygon id="radar-fill" fill="rgba(168,255,62,0.15)" stroke="var(--green)" stroke-width="1.5"/>
+                <!-- axis lines -->
+                <line id="rl1" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line id="rl2" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line id="rl3" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line id="rl4" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line id="rl5" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <!-- labels -->
+                <text id="rl-t1" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+                <text id="rl-t2" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+                <text id="rl-t3" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+                <text id="rl-t4" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+                <text id="rl-t5" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+              </svg>
+            </div>
+          </div>
+          <div class="metric-bars" id="metric-bars">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+        <!-- Key metrics + AI Insights -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="panel">
+            <div class="panel-title" style="margin-bottom:14px;">
+              Speech Metrics
+              <span class="demo-note" style="margin-left:8px;">Unavailable</span>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-dim);margin-top:12px;">Speaking analytics are not measured in this prototype.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:4px;">SPEAKING TIME</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.3rem;" id="report-speak-time">—</div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:4px;">INTERRUPTIONS</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.3rem;" id="report-interruptions">—</div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:4px;">FILLER WORDS</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.3rem;" id="report-fillers">—</div>
+              </div>
+              <div>
+                <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-bottom:4px;">EST. WPM</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.3rem;" id="report-wpm">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title" style="margin-bottom:8px;">
+              AI Insights
+              <span id="ai-insights-badge" class="demo-note" style="margin-left:8px;display:none;">Unavailable</span>
+            </div>
+            <ul class="insights-list" id="insights-list">
+              <li>Loading insights…</li>
+            </ul>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title" style="margin-bottom:14px;">Peer Average</div>
+            <div style="display:flex;gap:24px;">
+              <div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:4px;">You</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--green);" id="report-your-avg">—</div>
+              </div>
+              <div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:4px;">Room Avg.</div>
+                <div style="font-family:var(--display);font-weight:800;font-size:1.4rem;" id="report-room-avg">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-title" style="margin-bottom:14px;">Recent Sessions</div>
+        <div class="recent-sessions" id="report-recent-sessions">
+          <div style="color:var(--text-dim);font-size:0.85rem;">No previous sessions found.</div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:20px;justify-content:flex-end;">
+          <button class="btn btn-ghost" onclick="showScreen('dashboard')">Back to Dashboard</button>
+          <button class="btn btn-green" onclick="startGDFlow()">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN: HISTORY ══ -->
+    <div class="screen" id="screen-history">
+      <div class="report-header">
+        <h1>Session History</h1>
+        <p>Your past group discussions and performance.</p>
+      </div>
+      <div class="empty-state" id="history-empty">
+        <div class="empty-state-icon">📋</div>
+        <h3>No sessions yet</h3>
+        <p>Your completed sessions will appear here with full performance data.</p>
+      </div>
+      <div id="history-list" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     JAVASCRIPT — STATE MACHINE + API + AGORA
+════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ──────────────────────────────────────
+   CONSTANTS / CONFIG
+────────────────────────────────────── */
+const API_BASE  = window.location.origin;
+// MUST match VALID_AVATAR_COLORS in app/schemas/participant.py exactly:
+const VALID_AVATAR_COLORS = ['#7C6FF0', '#38D9C9', '#FF6FA8', '#FFC94A', '#4FD1C5', '#9B8CFF'];
+
+/* ──────────────────────────────────────
+   APP STATE
+────────────────────────────────────── */
+let currentScreen    = 'dashboard';
+let myAlias          = 'Anonymous';
+let myParticipantId  = null;
+let currentSessionId = null;
+let sessionSocket    = null;
+let rtcClient        = null;
+let localAudioTrack  = null;
+let isMicMuted       = false;
+let isInArena        = false;
+let isLeaving        = false;
+let arenaTimerInterval = null;
+let arenaTimeLeft    = 900;
+let arenaPhase       = 'idle';
+let discussionDuration = 780;
+let matchmakingCountdown = null;
+let micLevelInterval = null;
+let availableSessions = [];
+let arenaParticipants = {};   // participantId → { alias, agora_uid, micEnabled, seatIndex }
+let arenaParticipantsByUid = {}; // agora_uid → participantId
+let speakingVolumes  = {};    // agora_uid → volume
+let currentHostParticipantId = null;
+let dashboardData = null;
+
+/* ──────────────────────────────────────
+   AUTH / IDENTITY HELPERS
+────────────────────────────────────── */
+function getAuthHeaders() {
+  const token = localStorage.getItem('ss_token') || sessionStorage.getItem('ss_guest_token') || '';
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+function getMyAlias() {
+  const stored = sessionStorage.getItem('ss_alias') || localStorage.getItem('ss_alias') || '';
+  // Enforce 14-char limit (backend schema max_length=14)
+  return stored.slice(0, 14) || 'Anonymous';
+}
+function isAnonymous() {
+  return sessionStorage.getItem('ss_is_anonymous') === 'true';
+}
+function getStoredUser() {
+  try { return JSON.parse(localStorage.getItem('ss_user') || 'null'); } catch { return null; }
+}
+
+/* ──────────────────────────────────────
+   ALIAS GENERATION
+────────────────────────────────────── */
+const ADJ = ['Bold','Calm','Swift','Sharp','Keen','Brave','Cool','Dark','Wry'];
+const NON = ['Storm','Falcon','Echo','Ridge','Nova','Viper','Ember','Anchor'];
+function randomAlias() {
+  const a = ADJ[Math.floor(Math.random()*ADJ.length)];
+  const n = NON[Math.floor(Math.random()*NON.length)];
+  // max 14 chars (schema)
+  return `${a}${n}${Math.floor(Math.random()*9)+1}`.slice(0, 14);
+}
+function shuffleSetupAlias() {
+  document.getElementById('setup-alias').value = randomAlias();
+}
+
+/* ──────────────────────────────────────
+   SCREEN NAVIGATION
+────────────────────────────────────── */
+function hasProtectedLiveSession() {
+  return Boolean(
+    currentSessionId && myParticipantId &&
+    (arenaPhase === 'preparation' || arenaPhase === 'live')
+  );
+}
+
+function showScreen(name, options = {}) {
+  if (!options.force && name !== 'arena' && hasProtectedLiveSession()) {
+    confirmLeaveEarly(name);
+    return false;
+  }
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  currentScreen = name;
+
+  // Presentation-only arena focus: no navigation, leave, RTC, or socket side effects.
+  const appShell = document.querySelector('.app-shell');
+  const sidebar = document.getElementById('sidebar');
+  const arenaFocused = name === 'arena';
+  appShell?.classList.toggle('arena-focus', arenaFocused);
+  if (arenaFocused) sidebar?.classList.remove('open');
+
+  const titles = {
+    dashboard: 'Dashboard',
+    setup:     'Group Discussion',
+    matchmaking:'Matchmaking',
+    arena:     'Live GD Arena',
+    feedback:  'Peer Rating',
+    report:    'Performance Report',
+    history:   'History',
+  };
+  document.getElementById('topbar-title').textContent = titles[name] || 'SkillSwap';
+
+  // Hide topbar during arena for clean UX
+  const topbar = document.getElementById('main-topbar');
+  topbar.style.display = (name === 'arena') ? 'none' : 'flex';
+
+  if (name === 'report') { loadReportScreen(); setTimeout(animateReportCharts, 300); }
+  if (name === 'dashboard') { loadDashboard(); }
+  if (name === 'history') { renderHistory(); }
+  return true;
+}
+
+function handleLogoNavigation(event) {
+  event.preventDefault();
+  if (hasProtectedLiveSession()) {
+    confirmLeaveEarly(null, '/');
+    return;
+  }
+  window.location.href = '/';
+}
+
+window.addEventListener('beforeunload', event => {
+  if (!hasProtectedLiveSession() || isLeaving) return;
+  event.preventDefault();
+  event.returnValue = '';
+});
+
+function startGDFlow() {
+  const alias = getMyAlias();
+  document.getElementById('setup-alias').value = alias || randomAlias();
+  initMicCheck();
+  loadAvailableSessions();
+  showScreen('setup');
+}
+
+/* ──────────────────────────────────────
+   SIDEBAR / MOBILE
+────────────────────────────────────── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('mobile-menu-btn');
+  if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !btn.contains(e.target)) {
+    sidebar.classList.remove('open');
+  }
+});
+
+/* ──────────────────────────────────────
+   LOGOUT
+────────────────────────────────────── */
+async function handleLogout() {
+  if (hasProtectedLiveSession()) {
+    if (!window.confirm('Leave this GD early and log out?')) return;
+    await leaveArena(null);
+  }
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = '/';
+}
+
+/* ──────────────────────────────────────
+   API HELPER
+────────────────────────────────────── */
+async function api(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    },
+  });
+  let body = null;
+  try { body = await res.json(); } catch {}
+  if (!res.ok) {
+    const detail = Array.isArray(body?.detail)
+      ? body.detail.map(d => d.msg).join('; ')
+      : (body?.detail || `HTTP ${res.status}`);
+    const error = new Error(detail);
+    error.status = res.status;
+    throw error;
+  }
+  return body;
+}
+
+/* ──────────────────────────────────────
+   DASHBOARD INIT
+────────────────────────────────────── */
+/* ════════════════════════════════════════
+   APP INIT — AUTH GUARD
+════════════════════════════════════════ */
+async function initApp() {
+  // Auth guard: if no token at all, send to /auth
+  const hasToken = localStorage.getItem('ss_token') || sessionStorage.getItem('ss_guest_token');
+  if (!hasToken) {
+    window.location.href = '/auth';
+    return;
+  }
+
+  myAlias = getMyAlias();
+  if (!myAlias || myAlias === 'Anonymous') {
+    try {
+      const r = await api('/api/alias/random');
+      if (r?.alias) {
+        myAlias = r.alias.slice(0, 14);
+        sessionStorage.setItem('ss_alias', myAlias);
+      }
+    } catch {}
+  }
+
+  // Update sidebar / topbar
+  document.getElementById('sidebar-alias').textContent = myAlias;
+  document.getElementById('dash-alias').textContent = myAlias;
+  document.getElementById('topbar-avatar').textContent = myAlias.charAt(0).toUpperCase();
+  if (isAnonymous()) {
+    document.getElementById('anon-badge').textContent = 'Anon';
+    document.getElementById('sidebar-meta').textContent = 'Guest session';
+  } else {
+    const u = getStoredUser();
+    document.getElementById('anon-badge').textContent = u?.cohort_code || 'Member';
+    document.getElementById('sidebar-meta').textContent = u?.email || '';
+  }
+
+  loadDashboard();
+
+  // Scroll reveal
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+async function loadDashboard() {
+  document.getElementById('stat-sessions').textContent = '0';
+  document.getElementById('stat-rating').textContent = '—';
+  document.getElementById('stat-clarity').textContent = '—';
+  document.getElementById('stat-week').textContent = '0';
+  document.querySelectorAll('.stat-val .unit').forEach(u => u.style.display='none');
+  showProgressEmpty();
+  dashboardData = null;
+
+  if (!isAnonymous()) {
+    try {
+      dashboardData = await api('/api/users/me/dashboard');
+      const stats = dashboardData.stats || {};
+      document.getElementById('stat-sessions').textContent = stats.sessions_completed ?? 0;
+      document.getElementById('stat-week').textContent = stats.gds_this_week ?? 0;
+      if (stats.average_peer_rating != null) {
+        document.getElementById('stat-rating').textContent = Number(stats.average_peer_rating).toFixed(1);
+        document.getElementById('stat-rating').nextElementSibling.style.display = '';
+      }
+      if (stats.average_clarity != null) {
+        document.getElementById('stat-clarity').textContent = Number(stats.average_clarity).toFixed(1);
+        document.getElementById('stat-clarity').nextElementSibling.style.display = '';
+      }
+      renderActivityList(dashboardData.recent_activity || []);
+      const performance = dashboardData.performance || [];
+      if (performance.length >= 2) {
+        renderProgressChart(performance.map(item => Number(item.average_rating)));
+      }
+    } catch {
+      renderActivityList([]);
+    }
+  } else {
+    renderActivityList([]);
+  }
+
+  try {
+    const data = await api('/api/sessions/');
+    availableSessions = data.sessions || [];
+    const fillingSessions = availableSessions
+      .filter(s => s.status === 'filling' && s.occupied_seats < s.capacity)
+      .sort((a, b) => b.occupied_seats - a.occupied_seats);
+    if (fillingSessions.length) {
+      const s = fillingSessions[0];
+      document.getElementById('gd-seats-info').textContent =
+        `${fillingSessions.length} rooms · best match ${s.occupied_seats}/${s.capacity}`;
+    }
+  } catch {}
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  })[char]);
+}
+
+function formatActivityStatus(item) {
+  const participation = {
+    completed: 'Completed', left_early: 'Left early', in_progress: 'In progress',
+    preparing: 'Preparing', joined: 'Joined'
+  }[item.participation_status] || 'Participated';
+  const feedback = item.feedback_status === 'submitted'
+    ? 'Feedback submitted'
+    : 'Awaiting feedback submission';
+  return `${participation} · ${feedback}`;
+}
+
+function formatActivityDate(value) {
+  if (!value) return 'Date unavailable';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Date unavailable' : date.toLocaleString();
+}
+
+function renderActivityList(sessions) {
+  const list = document.getElementById('activity-list');
+  if (!sessions.length) {
+    list.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;padding:12px 0;">${isAnonymous() ? 'Anonymous sessions do not create cross-login history.' : 'No completed sessions yet. Start your first GD above!'}</div>`;
+    return;
+  }
+  list.innerHTML = sessions.slice(0, 3).map(s => `
+    <div class="activity-item">
+      <div class="activity-icon">💬</div>
+      <div class="activity-body">
+        <div class="activity-name">${escapeHtml((s.topic || 'Group Discussion').slice(0, 58))}</div>
+        <div class="activity-meta">${escapeHtml(formatActivityDate(s.occurred_at))} · ${escapeHtml(formatActivityStatus(s))}</div>
+      </div>
+      <div class="activity-score" style="font-size:0.8rem;color:var(--text-dim);">${s.received_rating == null ? '—' : Number(s.received_rating).toFixed(1) + ' ★'}</div>
+    </div>
+  `).join('');
+}
+
+function renderHistory() {
+  const empty = document.getElementById('history-empty');
+  const list = document.getElementById('history-list');
+  const entries = dashboardData?.history || [];
+  if (!entries.length) {
+    empty.style.display = '';
+    list.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  list.style.display = 'block';
+  list.innerHTML = entries.map(item => `
+    <div class="panel" style="margin-bottom:12px;display:flex;justify-content:space-between;gap:18px;align-items:center;">
+      <div>
+        <div class="panel-title">${escapeHtml(item.topic)}</div>
+        <div class="panel-sub">${escapeHtml(formatActivityDate(item.occurred_at))} · ${escapeHtml(formatActivityStatus(item))}</div>
+        <div class="panel-sub">Peer feedback: ${item.received_feedback_count} of ${item.expected_feedback_count} received</div>
+      </div>
+      <div class="activity-score">${item.received_rating == null ? '—' : Number(item.received_rating).toFixed(1) + ' ★'}</div>
+    </div>
+  `).join('');
+}
+
+function showProgressEmpty() {
+  document.getElementById('progress-svg').style.display = 'none';
+  document.getElementById('progress-empty').style.display = 'block';
+  document.getElementById('chart-line').setAttribute('d', '');
+  document.getElementById('chart-area').setAttribute('d', '');
+}
+
+function renderProgressChart(vals) {
+  if (vals.length < 2) { showProgressEmpty(); return; }
+  document.getElementById('progress-svg').style.display = '';
+  document.getElementById('progress-empty').style.display = 'none';
+  const W = 300, H = 80;
+  const pts = vals.map((v, i) => [i * (W / (vals.length - 1)), H - (v / 5) * H * 0.85 - 4]);
+  const line = pts.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(' ');
+  const area = line + ` L ${pts[pts.length-1][0]} ${H} L 0 ${H} Z`;
+  document.getElementById('chart-line').setAttribute('d', line);
+  document.getElementById('chart-area').setAttribute('d', area);
+}
+
+/* ──────────────────────────────────────
+   SETUP SCREEN
+────────────────────────────────────── */
+async function loadAvailableSessions() {
+  const infoEl = document.getElementById('setup-sessions-info');
+  try {
+    const data = await api('/api/sessions/');
+    availableSessions = data.sessions || [];
+    const open = availableSessions
+      .filter(s => s.status === 'filling' && s.occupied_seats < s.capacity)
+      .sort((a, b) => b.occupied_seats - a.occupied_seats);
+    infoEl.innerHTML = open.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:8px;">${open.slice(0, 3).map((room, index) =>
+          `<div class="chip" style="font-size:0.72rem;">Room ${String(index + 1).padStart(2, '0')} — ${room.occupied_seats}/${room.capacity}</div>`
+        ).join('')}</div>`
+      : `<div class="chip" style="font-size:0.72rem;color:var(--text-dim);">No open rooms right now</div>`;
+  } catch {
+    infoEl.innerHTML = `<div style="font-size:0.78rem;color:var(--rose);">Could not reach backend — start the server</div>`;
+  }
+}
+
+function selectRoomType(type) {
+  document.getElementById('rt-public').classList.toggle('active', type === 'public');
+  document.getElementById('rt-private').classList.toggle('active', type === 'private');
+  const reveal = document.getElementById('private-reveal');
+  if (type === 'private') {
+    reveal.classList.add('visible');
+    generateRoomCode();
+  } else {
+    reveal.classList.remove('visible');
+  }
+}
+
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const code = Array.from({length:8}, (_,i) => i===4?'-':chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('generated-room-code').textContent = code;
+}
+
+function selectPrivateMode(mode) {
+  document.getElementById('psb-create').classList.toggle('active', mode === 'create');
+  document.getElementById('psb-join').classList.toggle('active', mode === 'join');
+  document.getElementById('private-create-section').style.display = mode === 'create' ? 'block' : 'none';
+  document.getElementById('private-join-section').style.display = mode === 'join' ? 'block' : 'none';
+}
+
+function copyRoomCode() {
+  const code = document.getElementById('generated-room-code').textContent;
+  navigator.clipboard?.writeText(code).then(() => {
+    const btn = document.getElementById('copy-code-btn');
+    btn.textContent = 'Copied!'; btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 2000);
+  });
+}
+
+function selectPill(el, groupId) {
+  document.querySelectorAll(`#${groupId} .pill`).forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* Mic check */
+let micStream = null;
+let micAnalyser = null;
+let micAnimFrame = null;
+
+async function initMicCheck() {
+  const dot = document.getElementById('mic-dot');
+  const label = document.getElementById('mic-label');
+  const barsWrap = document.getElementById('setup-mic-bars');
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const ctx = new AudioContext();
+    const src = ctx.createMediaStreamSource(micStream);
+    micAnalyser = ctx.createAnalyser();
+    micAnalyser.fftSize = 64;
+    src.connect(micAnalyser);
+    dot.style.background = 'var(--green)';
+    label.textContent = 'Mic working';
+    label.style.color = 'var(--green)';
+    barsWrap.classList.add('mic-active');
+    animateMicSetup();
+  } catch {
+    dot.style.background = 'var(--rose)';
+    label.textContent = 'Mic unavailable — check permissions';
+    label.style.color = 'var(--rose)';
+  }
+}
+
+function animateMicSetup() {
+  if (!micAnalyser) return;
+  const buf = new Uint8Array(micAnalyser.frequencyBinCount);
+  micAnalyser.getByteFrequencyData(buf);
+  const avg = buf.reduce((a,b)=>a+b,0)/buf.length;
+  const bars = document.querySelectorAll('#setup-mic-bars .bar');
+  bars.forEach((b, i) => {
+    const h = Math.max(4, Math.min(18, (avg/128)*16 + Math.sin(Date.now()/200+i)*4));
+    b.style.height = h + 'px';
+  });
+  micAnimFrame = requestAnimationFrame(animateMicSetup);
+}
+
+/* ──────────────────────────────────────
+   FIND ROOM / MATCHMAKING
+────────────────────────────────────── */
+async function findRoom(attempt = 0) {
+  const rawAlias = document.getElementById('setup-alias').value.trim() || randomAlias();
+  const alias = rawAlias.slice(0, 14); // enforce schema max_length=14
+
+  const errorEl = document.getElementById('setup-error');
+  errorEl.classList.remove('visible');
+  const btn = document.getElementById('find-room-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:#080B0F;"></div> Finding Room…';
+  window.startSessionSent = false;
+  clearInterval(matchmakingCountdown);
+  matchmakingCountdown = null;
+
+  // Pick a valid avatar color from the backend-accepted list
+  const avatar_color = VALID_AVATAR_COLORS[Math.floor(Math.random() * VALID_AVATAR_COLORS.length)];
+
+  try {
+    const data = await api('/api/sessions/');
+    availableSessions = data.sessions || [];
+    const open = availableSessions
+      .filter(s => s.status === 'filling' && s.occupied_seats < s.capacity)
+      .sort((a, b) => b.occupied_seats - a.occupied_seats)[0];
+
+    if (!open) {
+      errorEl.textContent = 'No open rooms are available right now. Please try again.';
+      errorEl.classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = 'Find a Room';
+      return;
+    }
+
+    // Stop mic check
+    if (micAnimFrame) { cancelAnimationFrame(micAnimFrame); }
+    if (micStream) { micStream.getTracks().forEach(t => t.stop()); }
+
+    currentSessionId = open.id;
+    currentHostParticipantId = null;
+    myAlias = alias;
+    sessionStorage.setItem('ss_alias', alias);
+    updateSidebarAlias(alias);
+
+    // Join session — send backend-valid avatar_color
+    const joinRes = await api(`/api/sessions/${currentSessionId}/join`, {
+      method: 'POST',
+      body: JSON.stringify({
+        alias,
+        avatar_color,       // valid value from VALID_AVATAR_COLORS
+        mic_enabled: true,
+        cam_enabled: false,
+      }),
+    });
+    myParticipantId = joinRes.participant_id;
+
+    showScreen('matchmaking');
+    startMatchmaking(open, joinRes);
+
+  } catch (err) {
+    if (err.status === 409 && attempt < 2) {
+      btn.disabled = false;
+      btn.textContent = 'Find a Room';
+      return findRoom(attempt + 1);
+    }
+    errorEl.textContent = err.message || 'Could not find a room. Is the backend running?';
+    errorEl.classList.add('visible');
+    btn.disabled = false;
+    btn.textContent = 'Find a Room';
+  }
+}
+
+function updateSidebarAlias(alias) {
+  document.getElementById('sidebar-alias').textContent = alias;
+  document.getElementById('dash-alias').textContent = alias;
+  document.getElementById('topbar-avatar').textContent = alias.charAt(0).toUpperCase();
+}
+
+/* ──────────────────────────────────────
+   MATCHMAKING ANIMATION
+────────────────────────────────────── */
+const NODE_POSITIONS = [
+  { top:'8%',  left:'50%'  },
+  { top:'27%', left:'88%'  },
+  { top:'73%', left:'88%'  },
+  { top:'92%', left:'50%'  },
+  { top:'73%', left:'12%'  },
+  { top:'27%', left:'12%'  },
+];
+const FAKE_ALIASES = ['Aanya','Rohan','Mehak','Arjun','Kabir'];
+const FAKE_COLORS  = ['#7C6FF0', '#38D9C9', '#FF6FA8', '#FFC94A', '#4FD1C5'];
+
+function startMatchmaking(session, joinRes) {
+  const ring = document.querySelector('.match-ring');
+  // Clear old nodes
+  ring.querySelectorAll('.match-node').forEach(n => n.remove());
+
+  // Place "You" node first
+  const youNode = createMatchNode(myAlias, VALID_AVATAR_COLORS[0], true, 4);
+  ring.appendChild(youNode);
+  setTimeout(() => youNode.classList.add('in'), 100);
+
+  const totalSeats = session.capacity || 6;
+  let filled = joinRes.seats_filled || 1;
+  document.getElementById('match-count').textContent = filled;
+
+  // Place existing participants
+  session.participants.slice(0, 5).forEach((p, i) => {
+    if (p.alias !== myAlias) {
+      const node = createMatchNode(p.alias, VALID_AVATAR_COLORS.includes(p.avatar_color) ? p.avatar_color : VALID_AVATAR_COLORS[i % VALID_AVATAR_COLORS.length], false, i);
+      ring.appendChild(node);
+      setTimeout(() => node.classList.add('in'), 200 + i * 300);
+    }
+  });
+
+  // Open WebSocket
+  openSessionSocket(session.id, joinRes.participant_id, filled, totalSeats);
+}
+
+function createMatchNode(alias, color, isYou, seatIndex) {
+  const pos = NODE_POSITIONS[seatIndex % 6];
+  const node = document.createElement('div');
+  node.className = 'match-node' + (isYou ? ' you' : '');
+  node.style.top = pos.top; node.style.left = pos.left;
+  node.dataset.alias = alias;
+  // Use backend-valid color; fall back to first valid color
+  const safeColor = VALID_AVATAR_COLORS.includes(color) ? color : VALID_AVATAR_COLORS[0];
+  node.innerHTML = `
+    <div class="match-node-avatar" style="background:${safeColor};">
+      ${alias.slice(0,2).toUpperCase()}
+    </div>
+    <div class="match-node-name">${isYou ? 'You' : alias}</div>
+  `;
+  return node;
+}
+
+/* ──────────────────────────────────────
+   WEBSOCKET
+────────────────────────────────────── */
+function openSessionSocket(sessionId, participantId, filledNow, totalSeats) {
+  const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+  sessionSocket = new WebSocket(`${scheme}://${location.host}/ws/sessions/${sessionId}/${participantId}`);
+
+  sessionSocket.addEventListener('message', e => {
+    try { handleSocketMsg(JSON.parse(e.data), filledNow, totalSeats); } catch {}
+  });
+  sessionSocket.addEventListener('error', () => {
+    setCallStatus('WebSocket error — retrying…', true);
+  });
+  sessionSocket.addEventListener('open', () => {
+    sendSocket('JOIN_WAITING_ROOM', {});
+  });
+}
+
+function sendSocket(type, payload) {
+  if (sessionSocket?.readyState === WebSocket.OPEN) {
+    sessionSocket.send(JSON.stringify({ type, payload }));
+  }
+}
+
+function handleSocketMsg(msg, filledRef, totalSeats) {
+  const { type, payload } = msg;
+
+  if (type === 'QUEUE_UPDATED') {
+    const count = (payload.participants || []).length;
+    document.getElementById('match-count').textContent = count;
+    
+    // Auto-start when the waiting room reaches full capacity
+    if (count >= totalSeats && !window.startSessionSent) {
+      window.startSessionSent = true;
+      sendSocket('start_session', {});
+    }
+  }
+
+  if (type === 'USER_JOINED_ARENA') {
+    // Add to ring
+    const ring = document.querySelector('.match-ring');
+    if (!ring.querySelector(`[data-alias="${payload.alias}"]`) && payload.alias !== myAlias) {
+      const idx = ring.querySelectorAll('.match-node').length;
+      const node = createMatchNode(payload.alias, VALID_AVATAR_COLORS[idx % VALID_AVATAR_COLORS.length], false, idx);
+      ring.appendChild(node);
+      setTimeout(() => node.classList.add('in'), 50);
+    }
+    arenaParticipants[payload.participantId] = payload;
+    if (payload.isHost) currentHostParticipantId = payload.participantId;
+    if (payload.agoraUid) arenaParticipantsByUid[payload.agoraUid] = payload.participantId;
+    if (isInArena) {
+      buildParticipantGrid();
+      updateParticipantCount();
+    }
+  }
+
+  if (type === 'SESSION_STATE') {
+    currentHostParticipantId = payload.hostParticipantId || currentHostParticipantId;
+    const participants = Array.isArray(payload.arenaParticipants)
+      ? payload.arenaParticipants
+      : Object.values(payload.arenaParticipants || {});
+    participants.forEach(participant => {
+      if (!participant.participantId) return;
+      arenaParticipants[participant.participantId] = participant;
+      if (participant.agoraUid) {
+        arenaParticipantsByUid[participant.agoraUid] = participant.participantId;
+      }
+    });
+    if (isInArena) {
+      buildParticipantGrid();
+      updateParticipantCount();
+    }
+    updateHostControls();
+  }
+
+  if (type === 'HOST_UPDATED') {
+    currentHostParticipantId = payload.hostParticipantId || null;
+    Object.values(arenaParticipants).forEach(participant => {
+      participant.isHost = participant.participantId === currentHostParticipantId;
+    });
+    updateHostControls();
+  }
+
+  if (type === 'SESSION_STARTING') {
+    const prepDuration = payload.preparationDuration ?? 120;
+    discussionDuration = payload.discussionDuration ?? 780;
+    revealTopicAndEnter(prepDuration, discussionDuration);
+  }
+
+  if (type === 'PREPARATION_TICK') {
+    if (arenaPhase === 'preparation') {
+      arenaTimeLeft = payload.remainingSeconds ?? arenaTimeLeft;
+      renderArenaTimer(arenaTimeLeft);
+    }
+  }
+
+  if (type === 'SESSION_STARTED') {
+    startLiveDiscussion(payload.duration ?? discussionDuration);
+  }
+
+  if (type === 'TIMER_TICK') {
+    if (arenaPhase === 'live') {
+      arenaTimeLeft = payload.remainingSeconds ?? arenaTimeLeft;
+      renderArenaTimer(arenaTimeLeft);
+    }
+  }
+
+  if (type === 'SESSION_COMPLETED') {
+    transitionToFeedback();
+  }
+
+  if (type === 'SESSION_START_CANCELLED') {
+    cancelPendingSessionStart(payload.reason);
+  }
+
+  if (type === 'USER_LEFT_ARENA') {
+    delete arenaParticipants[payload.participantId];
+    removeParticipantCard(payload.participantId);
+  }
+
+  if (type === 'SESSION_ACTION_REJECTED') {
+    setCallStatus(payload.reason || 'That session action is not permitted.', true);
+    updateHostControls();
+  }
+
+  if (type === 'mic_status') {
+    updateMicStatus(payload.participantId, payload.enabled);
+  }
+}
+
+/* ──────────────────────────────────────
+   TOPIC REVEAL + COUNTDOWN
+────────────────────────────────────── */
+async function revealTopicAndEnter(prepDuration, liveDuration) {
+  // Fetch session to get topic
+  let topic = 'Should AI-generated work require a disclosure label?';
+  try {
+    const s = await api(`/api/sessions/${currentSessionId}`);
+    if (s?.topic) topic = s.topic;
+  } catch {}
+
+  document.getElementById('match-title').innerHTML = 'Room ready!';
+  document.getElementById('match-sub').textContent = 'Topic revealed · preparation begins now';
+  document.getElementById('searching-dots') && (document.getElementById('searching-dots').style.display = 'none');
+
+  document.getElementById('reveal-topic').textContent = topic;
+  document.getElementById('arena-topic').textContent  = topic;
+  const revealEl = document.getElementById('topic-reveal');
+  revealEl.classList.add('visible');
+
+  arenaTimeLeft = prepDuration;
+
+  const circle = document.getElementById('countdown-circle');
+  const circumference = 2 * Math.PI * 35;
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = 0;
+  document.getElementById('countdown-num').textContent = '2m';
+
+  clearTimeout(matchmakingCountdown);
+  matchmakingCountdown = setTimeout(() => {
+    matchmakingCountdown = null;
+    enterPreparationArena(topic, prepDuration, liveDuration);
+  }, 500);
+}
+
+function cancelPendingSessionStart(reason) {
+  clearTimeout(matchmakingCountdown);
+  matchmakingCountdown = null;
+  window.startSessionSent = false;
+  clearInterval(arenaTimerInterval);
+  arenaTimerInterval = null;
+  arenaPhase = 'matchmaking';
+  isInArena = false;
+  document.getElementById('topic-reveal').classList.remove('visible');
+  document.getElementById('countdown-num').textContent = '3';
+  document.getElementById('match-title').innerHTML =
+    'Finding participants<span class="searching-dots"><span></span><span></span><span></span></span>';
+  document.getElementById('match-sub').textContent =
+    reason || 'A seat reopened. Waiting for another participant…';
+  showScreen('matchmaking');
+}
+
+/* ──────────────────────────────────────
+   ENTER ARENA
+────────────────────────────────────── */
+async function enterPreparationArena(topic, prepDuration, liveDuration) {
+  try {
+    const session = await api(`/api/sessions/${currentSessionId}`);
+    if (!['starting', 'in_progress'].includes(session.status)) {
+      cancelPendingSessionStart('A seat reopened. Waiting for another participant…');
+      return;
+    }
+  } catch {
+    cancelPendingSessionStart('Could not confirm the room start. Waiting to retry…');
+    return;
+  }
+
+  showScreen('arena');
+  document.getElementById('arena-topic').textContent = topic;
+  arenaTimeLeft = prepDuration;
+  discussionDuration = liveDuration;
+  arenaPhase = 'preparation';
+  isInArena = true;
+
+  const phaseChip = document.getElementById('arena-phase-chip');
+  phaseChip.classList.add('preparation');
+  document.getElementById('arena-phase-label').textContent = 'Preparation Time';
+  document.getElementById('complete-session-btn').disabled = true;
+  updateHostControls();
+  document.getElementById('mute-btn').disabled = true;
+  document.getElementById('arena-status-text').textContent = 'Preparing';
+  setCallStatus('Preparation time · discussion audio starts at 13:00');
+  renderArenaTimer(arenaTimeLeft);
+
+  buildParticipantGrid();
+
+  // Notify WS
+  sendSocket('ARENA_JOINED', {});
+}
+
+async function startLiveDiscussion(duration) {
+  if (!isInArena || arenaPhase === 'live') return;
+  arenaPhase = 'live';
+  arenaTimeLeft = duration;
+  const phaseChip = document.getElementById('arena-phase-chip');
+  phaseChip.classList.remove('preparation');
+  document.getElementById('arena-phase-label').textContent = 'Live Discussion';
+  updateHostControls();
+  document.getElementById('arena-status-text').textContent = 'Connecting…';
+  renderArenaTimer(arenaTimeLeft);
+  startArenaTimer();
+
+  // Agora joins and publishes the microphone only after preparation ends.
+  await connectAgora();
+}
+
+/* ──────────────────────────────────────
+   PARTICIPANT GRID (6 slots)
+────────────────────────────────────── */
+const AVATAR_ASSETS = [
+  '/static/avatars/gd-avatar-1.png',
+  '/static/avatars/gd-avatar-2.png',
+  '/static/avatars/gd-avatar-3.png',
+  '/static/avatars/gd-avatar-4.png',
+  '/static/avatars/gd-avatar-5.png',
+  '/static/avatars/gd-avatar-6.png',
+];
+
+function getParticipantSeat(participant) {
+  const seat = Number(participant?.seatIndex ?? participant?.seat_index);
+  return Number.isInteger(seat) && seat >= 1 && seat <= 6 ? seat : null;
+}
+
+function orderParticipantsBySeat(participants) {
+  const seats = new Array(6).fill(null);
+  const withoutSeat = [];
+
+  participants.forEach(participant => {
+    const seat = getParticipantSeat(participant);
+    if (seat && !seats[seat - 1]) seats[seat - 1] = participant;
+    else withoutSeat.push(participant);
+  });
+
+  // Legacy presence payloads did not include a seat. Keep their fallback stable
+  // across clients instead of depending on WebSocket arrival order.
+  withoutSeat.sort((a, b) =>
+    String(a.participantId || '').localeCompare(String(b.participantId || ''))
+  );
+  withoutSeat.forEach(participant => {
+    const openSeat = seats.findIndex(value => value === null);
+    if (openSeat !== -1) seats[openSeat] = participant;
+  });
+  return seats;
+}
+
+function buildParticipantGrid() {
+  const grid = document.getElementById('participants-grid');
+  grid.innerHTML = '';
+
+  const seatedParticipants = orderParticipantsBySeat(Object.values(arenaParticipants));
+  // Always show 6 slots
+  for (let i = 0; i < 6; i++) {
+    const p = seatedParticipants[i];
+    const card = document.createElement('div');
+    card.dataset.seat = String(i + 1);
+    if (!p) {
+      card.className = 'participant-card empty';
+      card.innerHTML = `<div class="avatar-portrait" aria-hidden="true"></div><div class="p-alias" style="color:var(--text-dim);">Empty seat</div>`;
+    } else {
+      const isMe = p.participantId === myParticipantId || p.alias === myAlias;
+      card.className = 'participant-card';
+      card.dataset.pid = p.participantId || '';
+      card.dataset.uid = p.agoraUid || '';
+      card.innerHTML = `
+        <div class="avatar-portrait"><img src="${AVATAR_ASSETS[i]}" alt="" aria-hidden="true"></div>
+        <div class="p-alias${isMe?' you':''}">${isMe?'You':p.alias}</div>
+        <div class="p-speaking-indicator">
+          <div class="p-waveform">
+            <div class="bar" style="height:4px;"></div>
+            <div class="bar" style="height:6px;"></div>
+            <div class="bar" style="height:4px;"></div>
+            <div class="bar" style="height:6px;"></div>
+            <div class="bar" style="height:4px;"></div>
+          </div>
+        </div>
+      `;
+    }
+    grid.appendChild(card);
+  }
+
+  // Speaking order
+  buildSpeakingOrder(seatedParticipants.filter(Boolean));
+}
+
+function buildSpeakingOrder(participants) {
+  const list = document.getElementById('speaking-order-list');
+  list.innerHTML = participants.slice(0, 6).map((p, i) => `
+    <div class="speaking-item">
+      <span class="speaking-rank">${i+1}</span>
+      <span class="speaking-alias">${p.alias === myAlias ? 'You' : p.alias}</span>
+      <div class="speaking-bars">
+        <div class="b"></div><div class="b"></div><div class="b"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeParticipantCard(participantId) {
+  const card = document.querySelector(`.participant-card[data-pid="${participantId}"]`);
+  if (card) {
+    card.className = 'participant-card empty';
+    card.removeAttribute('data-pid');
+    card.removeAttribute('data-uid');
+    card.innerHTML = `<div class="avatar-portrait" aria-hidden="true"></div><div class="p-alias" style="color:var(--text-dim);">Left</div>`;
+  }
+  updateParticipantCount();
+}
+
+function updateMicStatus(participantId, enabled) {
+  const card = document.querySelector(`.participant-card[data-pid="${participantId}"]`);
+  // Visual feedback handled by Agora volume
+}
+
+function updateParticipantCount() {
+  const active = Object.keys(arenaParticipants).length;
+  document.getElementById('arena-participant-count').textContent = `${active}/6`;
+}
+
+function updateHostControls() {
+  const control = document.getElementById('complete-session-control');
+  const button = document.getElementById('complete-session-btn');
+  const isHost = Boolean(myParticipantId && currentHostParticipantId === myParticipantId);
+  control.style.display = isHost ? '' : 'none';
+  button.disabled = !isHost || arenaPhase !== 'live';
+}
+
+/* ──────────────────────────────────────
+   ARENA TIMER
+────────────────────────────────────── */
+function renderArenaTimer(seconds) {
+  const safeSeconds = Math.max(0, Number(seconds) || 0);
+  const m = Math.floor(safeSeconds / 60);
+  const s = safeSeconds % 60;
+  document.getElementById('arena-timer').textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function startArenaTimer() {
+  if (arenaTimerInterval) clearInterval(arenaTimerInterval);
+  arenaTimerInterval = setInterval(() => {
+    if (arenaPhase !== 'live') return;
+    arenaTimeLeft = Math.max(0, arenaTimeLeft - 1);
+    renderArenaTimer(arenaTimeLeft);
+    if (arenaTimeLeft === 0) {
+      clearInterval(arenaTimerInterval);
+      handleSessionEnd();
+    }
+  }, 1000);
+}
+
+function handleSessionEnd() {
+  setCallStatus('Discussion complete · waiting for the server to open peer feedback…');
+}
+
+async function transitionToFeedback() {
+  if (arenaPhase === 'feedback') return;
+  arenaPhase = 'feedback';
+  clearInterval(arenaTimerInterval);
+  arenaTimerInterval = null;
+  if (localAudioTrack) { localAudioTrack.close(); localAudioTrack = null; }
+  if (rtcClient) { try { await rtcClient.leave(); } catch {} rtcClient = null; }
+  sessionSocket?.close();
+  sessionSocket = null;
+  isInArena = false;
+  currentHostParticipantId = null;
+  await loadFeedbackScreen();
+  showScreen('feedback');
+}
+
+/* ──────────────────────────────────────
+   AGORA RTC
+────────────────────────────────────── */
+function setCallStatus(msg, isError = false) {
+  const el = document.getElementById('call-status');
+  if (el) { el.textContent = msg; el.style.color = isError ? 'var(--rose)' : 'var(--text-dim)'; }
+}
+
+async function renewAgoraToken() {
+  if (!rtcClient || !currentSessionId || !myParticipantId) return;
+  try {
+    const tokenData = await api(`/api/sessions/${currentSessionId}/agora-token`, {
+      method: 'POST',
+      body: JSON.stringify({ participant_id: myParticipantId, role: 'publisher' }),
+    });
+    await rtcClient.renewToken(tokenData.token);
+  } catch (err) {
+    setCallStatus('Agora token renewal failed: ' + (err.message || 'unknown error'), true);
+  }
+}
+
+async function connectAgora() {
+  if (typeof AgoraRTC === 'undefined') {
+    setCallStatus('Agora SDK not loaded', true);
+    return;
+  }
+  try {
+    // Get token from backend
+    const tokenData = await api(`/api/sessions/${currentSessionId}/agora-token`, {
+      method: 'POST',
+      body: JSON.stringify({ participant_id: myParticipantId, role: 'publisher' }),
+    });
+
+    const appId   = tokenData.app_id;
+    const token   = tokenData.token;
+    const channel = tokenData.channel;
+    const uid     = tokenData.uid;
+
+    if (!appId || !token) {
+      setCallStatus('Agora not configured — audio disabled', true);
+      return;
+    }
+
+    rtcClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    rtcClient.on('token-privilege-will-expire', renewAgoraToken);
+    rtcClient.on('token-privilege-did-expire', () => {
+      setCallStatus('Agora token expired. Leave and re-enter the arena to reconnect.', true);
+    });
+
+    rtcClient.on('user-published', async (user, mediaType) => {
+      await rtcClient.subscribe(user, mediaType);
+      if (mediaType === 'audio') {
+        user.audioTrack?.play();
+        const pid = arenaParticipantsByUid[user.uid];
+        if (pid) arenaParticipants[pid] = { ...(arenaParticipants[pid]||{}), remoteTrack: user.audioTrack };
+      }
+    });
+
+    rtcClient.on('user-unpublished', (user) => {
+      const pid = arenaParticipantsByUid[user.uid];
+      const card = pid && document.querySelector(`.participant-card[data-pid="${pid}"]`);
+      if (card) card.classList.remove('speaking');
+    });
+
+    rtcClient.on('user-left', (user) => {
+      const pid = arenaParticipantsByUid[user.uid];
+      if (pid) { removeParticipantCard(pid); delete arenaParticipants[pid]; }
+    });
+
+    await rtcClient.join(appId, channel, token, uid);
+    localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    await rtcClient.publish([localAudioTrack]);
+
+    document.getElementById('mute-btn').disabled = false;
+    setCallStatus('Connected · Audio live');
+    document.getElementById('arena-status-text').textContent = 'Connected';
+
+    // Volume-based speaking detection
+    startSpeakingDetection();
+
+  } catch (err) {
+    if (err.code === 'OPERATION_ABORTED') return;
+    setCallStatus('Audio error: ' + (err.message || err.code || 'unknown'), true);
+    // Show resume button for autoplay policy
+    document.getElementById('resume-audio-btn').classList.add('visible');
+  }
+}
+
+function startSpeakingDetection() {
+  setInterval(() => {
+    // Local user speaking detection
+    if (localAudioTrack && !isMicMuted) {
+      const vol = localAudioTrack.getVolumeLevel ? localAudioTrack.getVolumeLevel() * 100 : 0;
+      updateSpeakingState(myParticipantId, vol > 8);
+    }
+    // Remote user volume
+    if (rtcClient) {
+      const volumes = rtcClient.getRemoteAudioStats ? rtcClient.getRemoteAudioStats() : {};
+      Object.entries(volumes).forEach(([uid, stats]) => {
+        const pid = arenaParticipantsByUid[Number(uid)];
+        if (pid) updateSpeakingState(pid, (stats.receiveLevel || 0) > 8);
+      });
+    }
+  }, 200);
+}
+
+function updateSpeakingState(pid, isSpeaking) {
+  const card = document.querySelector(`.participant-card[data-pid="${pid}"]`);
+  if (!card) return;
+  if (isSpeaking) {
+    card.classList.add('speaking');
+    const bars = card.querySelectorAll('.p-waveform .bar');
+    bars.forEach(b => { b.style.height = (4 + Math.random() * 10) + 'px'; });
+  } else {
+    card.classList.remove('speaking');
+    card.querySelectorAll('.p-waveform .bar').forEach(b => { b.style.height = '4px'; });
+  }
+}
+
+async function toggleMute() {
+  if (!localAudioTrack) return;
+  isMicMuted = !isMicMuted;
+  await localAudioTrack.setMuted(isMicMuted);
+  sendSocket('mic_status', { enabled: !isMicMuted });
+  const btn = document.getElementById('mute-btn');
+  const lbl = document.getElementById('mute-label');
+  if (isMicMuted) {
+    btn.classList.add('muted'); btn.textContent = '🔇'; lbl.textContent = 'Muted';
+  } else {
+    btn.classList.remove('muted'); btn.textContent = '🎙️'; lbl.textContent = 'Audio';
+  }
+}
+
+async function resumeAudio() {
+  try {
+    AgoraRTC.getDevices && await AgoraRTC.getDevices();
+    document.getElementById('resume-audio-btn').classList.remove('visible');
+    setCallStatus('Audio resumed');
+  } catch {}
+}
+
+async function confirmLeaveEarly(nextScreen = 'dashboard', redirectUrl = null) {
+  if (!window.confirm('Leave this GD early? Your seat will be released and this cannot be undone.')) return false;
+  await leaveArena(nextScreen, redirectUrl);
+  return true;
+}
+
+async function leaveArena(nextScreen = 'dashboard', redirectUrl = null) {
+  if (isLeaving) return;
+  isLeaving = true;
+  clearInterval(arenaTimerInterval);
+
+  sendSocket('LEAVE_ARENA', {});
+  sessionSocket?.close();
+  sessionSocket = null;
+
+  if (localAudioTrack) { localAudioTrack.close(); localAudioTrack = null; }
+  if (rtcClient) { try { await rtcClient.leave(); } catch {} rtcClient = null; }
+
+  // Leave session via API
+  if (currentSessionId && myParticipantId) {
+    try {
+      await api(`/api/sessions/${currentSessionId}/leave`, {
+        method: 'POST',
+        body: JSON.stringify({ participant_id: myParticipantId }),
+      });
+    } catch {}
+  }
+
+  isInArena = false;
+  arenaPhase = 'idle';
+  currentHostParticipantId = null;
+  isLeaving = false;
+  currentSessionId = null;
+  myParticipantId = null;
+  if (redirectUrl) {
+    window.location.href = redirectUrl;
+  } else if (nextScreen) {
+    showScreen(nextScreen, { force: true });
+  }
+}
+
+function completeSession() {
+  if (arenaPhase !== 'live' || !sessionSocket || sessionSocket.readyState !== WebSocket.OPEN) {
+    setCallStatus('The session can only be completed during a live discussion.', true);
+    return;
+  }
+  if (currentHostParticipantId !== myParticipantId) {
+    setCallStatus('Only the current room host can complete the session.', true);
+    updateHostControls();
+    return;
+  }
+  if (!window.confirm('Complete this GD for everyone and open peer feedback?')) return;
+  document.getElementById('complete-session-btn').disabled = true;
+  setCallStatus('Completing session…');
+  sendSocket('complete_session', {});
+}
+
+function raiseHand() {
+  const btn = document.getElementById('raise-hand-btn');
+  btn.style.background = 'rgba(168,255,62,0.15)';
+  btn.style.borderColor = 'rgba(168,255,62,0.4)';
+  setTimeout(() => {
+    btn.style.background = '';
+    btn.style.borderColor = '';
+  }, 2000);
+}
+
+/* ──────────────────────────────────────
+   CANCEL MATCHMAKING
+────────────────────────────────────── */
+async function cancelMatchmaking() {
+  clearInterval(matchmakingCountdown);
+  matchmakingCountdown = null;
+  window.startSessionSent = false;
+  sendSocket('LEAVE_WAITING_ROOM', {});
+  sessionSocket?.close();
+  sessionSocket = null;
+  if (currentSessionId && myParticipantId) {
+    try {
+      await api(`/api/sessions/${currentSessionId}/leave`, {
+        method: 'POST',
+        body: JSON.stringify({ participant_id: myParticipantId }),
+      });
+    } catch {}
+  }
+  currentSessionId = null;
+  myParticipantId = null;
+  showScreen('setup');
+}
+
+/* ──────────────────────────────────────
+   PEER RATING
+────────────────────────────────────── */
+let feedbackParticipants = [];
+const METRIC_KEYS = ['communication','participation','relevance','confidence','leadership'];
+
+async function loadFeedbackScreen() {
+  const tbody = document.getElementById('rating-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);padding:20px 0;">Loading participants…</td></tr>';
+
+  try {
+    const data = await api(`/api/sessions/${currentSessionId}/rating-participants?rater_participant_id=${encodeURIComponent(myParticipantId)}`);
+    feedbackParticipants = data.participants || [];
+
+    if (!feedbackParticipants.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);padding:16px 0;">No other participants to rate.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = feedbackParticipants.map((p, pi) => `
+      <tr data-ratee="${p.id}">
+        <td>
+          <div class="ratee-cell">
+            <div class="ratee-avatar" style="background:${p.avatar_color || VALID_AVATAR_COLORS[pi % VALID_AVATAR_COLORS.length]};color:#fff;">
+              ${(p.alias||'?').slice(0,2).toUpperCase()}
+            </div>
+            <div class="ratee-alias">${p.alias}</div>
+          </div>
+        </td>
+        ${METRIC_KEYS.map((m, mi) => `
+          <td>
+            <div class="star-row" data-metric="${m}" data-ratee="${p.id}">
+              ${[1,2,3,4,5].map(v => `<div class="star" data-val="${v}" onclick="setStar(this,'${p.id}','${m}')">★</div>`).join('')}
+            </div>
+          </td>
+        `).join('')}
+      </tr>
+    `).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--rose);padding:16px 0;">${err.message}</td></tr>`;
+  }
+}
+
+function setStar(el, rateeId, metric) {
+  const val = parseInt(el.dataset.val);
+  const row = el.closest('.star-row');
+  row.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('lit', i < val);
+  });
+  row.dataset.rating = val;
+}
+
+// Collect ratings from DOM
+function collectRatings() {
+  return feedbackParticipants.map(p => {
+    const metrics = {};
+    METRIC_KEYS.forEach(m => {
+      const row = document.querySelector(`.star-row[data-metric="${m}"][data-ratee="${p.id}"]`);
+      metrics[m] = row ? parseInt(row.dataset.rating || '3') : 3;
+    });
+    return {
+      target_participant_id: p.id,
+      target_alias: p.alias,
+      metrics: {
+        communication: metrics.communication,
+        confidence:    metrics.confidence,
+        relevance:     metrics.relevance,
+        participation: metrics.participation,
+        leadership:    metrics.leadership,
+      },
+      feedback_text: null,
+    };
+  });
+}
+
+async function submitRatings() {
+  const btn = document.getElementById('submit-ratings-btn');
+  const errEl = document.getElementById('feedback-error');
+  errEl.classList.remove('visible');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-top-color:#080B0F;"></div> Submitting…';
+
+  const ratings = collectRatings();
+
+  try {
+    await api(`/api/sessions/${currentSessionId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify({
+        session_id: currentSessionId,
+        rater_participant_id: myParticipantId,
+        ratings,
+      }),
+    });
+    loadReportScreen();
+    showScreen('report');
+  } catch (err) {
+    errEl.textContent = err.message || 'Could not submit ratings.';
+    errEl.classList.add('visible');
+    btn.disabled = false;
+    btn.textContent = 'Submit Ratings';
+  }
+}
+
+/* ──────────────────────────────────────
+   PERFORMANCE REPORT
+────────────────────────────────────── */
+let reportData = null;
+
+async function loadReportScreen() {
+  const historyEntry = dashboardData?.history?.[0] || null;
+  const reportSessionId = currentSessionId || historyEntry?.session_id;
+  const reportParticipantId = myParticipantId || historyEntry?.participant_id;
+  resetReportToPending();
+
+  if (!reportSessionId || !reportParticipantId) {
+    renderReportRecentSessions();
+    return;
+  }
+
+  try {
+    reportData = await api(`/api/sessions/${reportSessionId}/participants/${reportParticipantId}/report`);
+    const received = reportData.received_count || 0;
+    const expected = reportData.expected_count || 0;
+    document.getElementById('report-feedback-count').textContent = received
+      ? `Peer feedback: ${received} of ${expected} received`
+      : 'Awaiting peer feedback';
+
+    if (reportData.overall_rating != null && reportData.averages) {
+      const display = Number(reportData.overall_rating).toFixed(1);
+      const avgs = reportData.averages;
+      document.getElementById('report-score').textContent = display;
+      document.getElementById('report-verdict').textContent = 'Based on received peer ratings';
+      document.getElementById('report-your-avg').textContent = display;
+      renderMetricBars({
+        Clarity: Number(avgs.communication),
+        Listening: Number(avgs.participation),
+        Relevance: Number(avgs.relevance),
+        Confidence: Number(avgs.confidence),
+        Leadership: Number(avgs.leadership),
+      });
+      renderRadarChart([
+        avgs.communication, avgs.participation, avgs.relevance,
+        avgs.confidence, avgs.leadership
+      ]);
+    }
+    if (reportData.room_average != null) {
+      document.getElementById('report-room-avg').textContent = Number(reportData.room_average).toFixed(1);
+    }
+    renderAIAnalysis(reportData.ai_analysis);
+  } catch {
+    document.getElementById('report-verdict').textContent = 'Report unavailable';
+  }
+  renderReportRecentSessions();
+}
+
+function resetReportToPending() {
+  reportData = null;
+  document.getElementById('report-score').textContent = '—';
+  document.getElementById('report-verdict').textContent = 'Awaiting peer feedback';
+  document.getElementById('report-feedback-count').textContent = 'Awaiting peer feedback';
+  document.getElementById('report-your-avg').textContent = '—';
+  document.getElementById('report-room-avg').textContent = '—';
+  ['report-speak-time', 'report-interruptions', 'report-fillers', 'report-wpm']
+    .forEach(id => document.getElementById(id).textContent = '—');
+  renderMetricBars({ Clarity:null, Listening:null, Relevance:null, Confidence:null, Leadership:null });
+  renderRadarChart(null);
+  renderAIAnalysis(null);
+}
+
+function renderAIAnalysis(analysis) {
+  const list = document.getElementById('insights-list');
+  const badge = document.getElementById('ai-insights-badge');
+  if (!analysis) {
+    badge.style.display = 'inline-flex';
+    list.innerHTML = '<li>AI analysis coming soon. No participant-specific analysis was produced for this session.</li>';
+    return;
+  }
+  badge.style.display = 'none';
+  const items = [analysis.summary, ...(analysis.strengths || []), ...(analysis.improvements || [])]
+    .filter(Boolean);
+  list.innerHTML = items.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+}
+
+function renderReportRecentSessions() {
+  const sessions = dashboardData?.history || [];
+  const rsEl = document.getElementById('report-recent-sessions');
+  if (!sessions.length) {
+    rsEl.innerHTML = '<div style="color:var(--text-dim);font-size:0.85rem;">No registered-user session history found.</div>';
+    return;
+  }
+  rsEl.innerHTML = sessions.slice(0, 3).map(item => `
+    <div class="recent-row">
+      <div>
+        <div class="recent-arena">${escapeHtml(formatActivityStatus(item))}</div>
+        <div class="recent-topic">${escapeHtml(item.topic)}</div>
+      </div>
+      <div class="recent-score">${item.received_rating == null ? '—' : Number(item.received_rating).toFixed(1) + ' ★'}</div>
+    </div>
+  `).join('');
+}
+
+function renderMetricBars(metrics) {
+  const wrap = document.getElementById('metric-bars');
+  wrap.innerHTML = Object.entries(metrics).map(([name, val]) => {
+    const numeric = val == null ? null : Number(val);
+    const pct = numeric == null ? 0 : Math.min(100, (numeric / 5) * 100);
+    return `
+      <div class="metric-row">
+        <div class="metric-header">
+          <span class="metric-name">${name}</span>
+          <span class="metric-val">${numeric == null ? '—' : numeric.toFixed(1)}</span>
+        </div>
+        <div class="metric-track">
+          <div class="metric-fill" style="width:${pct}%;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function animateReportCharts() {
+  document.querySelectorAll('.metric-fill').forEach(el => el.classList.add('animated'));
+}
+
+function renderRadarChart(values) {
+  // values: [communication, participation, relevance, confidence, leadership]
+  const labels = ['Clarity','Listening','Relevance','Confidence','Leadership'];
+  const N = 5;
+  const R = 60; // max radius
+  const center = { x: 0, y: 0 };
+
+  function ptAt(i, r) {
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    return { x: Math.cos(angle) * r, y: Math.sin(angle) * r };
+  }
+
+  // Background polygon
+  const bgPts = Array.from({length:N}, (_,i) => ptAt(i, R));
+  document.getElementById('radar-bg').setAttribute('points', bgPts.map(p=>`${p.x},${p.y}`).join(' '));
+
+  // Data polygon
+  const dataVals = (values || [0,0,0,0,0]).map(v => ((v || 0) / 5) * R);
+  const dataPts = dataVals.map((r, i) => ptAt(i, r));
+  document.getElementById('radar-fill').setAttribute('points', dataPts.map(p=>`${p.x},${p.y}`).join(' '));
+  document.getElementById('radar-fill').style.display = values ? '' : 'none';
+
+  // Axis lines + labels
+  for (let i = 0; i < N; i++) {
+    const pt = ptAt(i, R);
+    const labelPt = ptAt(i, R + 18);
+    document.getElementById(`rl${i+1}`).setAttribute('x1', 0);
+    document.getElementById(`rl${i+1}`).setAttribute('y1', 0);
+    document.getElementById(`rl${i+1}`).setAttribute('x2', pt.x);
+    document.getElementById(`rl${i+1}`).setAttribute('y2', pt.y);
+    const t = document.getElementById(`rl-t${i+1}`);
+    t.setAttribute('x', labelPt.x);
+    t.setAttribute('y', labelPt.y + 3);
+    t.textContent = labels[i];
+  }
+}
+
+/* ──────────────────────────────────────
+   BOOT
+────────────────────────────────────── */
+initApp();
+</script>
+</body>
+</html>

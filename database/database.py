@@ -1,21 +1,8 @@
-from sqlalchemy import create_engine, URL
-from sqlalchemy.orm import sessionmaker, declarative_base
+"""Deprecated compatibility exports for the unified async database layer.
 
-DATABASE_URL = URL.create(
-    drivername="postgresql+psycopg2",
-    username="postgres",
-    password="Prisha@20",
-    host="localhost",
-    port=2023,
-    database="skillswap_db"
-)
+New code must import these objects from :mod:`app.database` directly.
+"""
 
-engine = create_engine(DATABASE_URL)
+from app.database import Base, async_session_maker, engine, get_db, init_db
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-Base = declarative_base()
+__all__ = ["Base", "async_session_maker", "engine", "get_db", "init_db"]

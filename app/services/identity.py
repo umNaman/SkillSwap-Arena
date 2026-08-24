@@ -34,3 +34,12 @@ async def check_alias_available(db: AsyncSession, session_id: uuid.UUID, alias: 
     result = await db.execute(query)
     participant = result.scalar_one_or_none()
     return participant is None
+
+
+def create_identity(alias: str, avatar_color: str) -> dict:
+    cleaned_alias = alias.strip()
+    return {
+        "alias": cleaned_alias,
+        "avatar_color": avatar_color,
+        "valid": bool(cleaned_alias) and validate_avatar_color(avatar_color),
+    }

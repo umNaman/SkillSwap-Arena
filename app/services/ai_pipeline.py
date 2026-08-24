@@ -9,11 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models import AIInsight, InsightStatus
+from app.models import GDSession
 from app.config import settings
+from app.database import async_session_maker
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
 async def trigger_analysis(db: AsyncSession, session_id: uuid.UUID, audio_data: Optional[bytes] = None) -> AIInsight:
+    session = (await db.execute(select(GDSession).where(GDSession.id == session_id))).scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
     insight = AIInsight(
         id=uuid.uuid4(),
         session_id=session_id,
@@ -39,32 +45,34 @@ async def process_analysis(db: AsyncSession, insight_id: uuid.UUID, audio_data: 
     
     api_key = settings.OPENAI_API_KEY
     if not api_key:
-        insight.status = InsightStatus.COMPLETED
-        insight.strengths = ["Mock strength 1", "Mock strength 2"]
-        insight.improvements = ["Mock improvement 1"]
-        insight.overall_score = 85
-        insight.summary = "This is a mock summary because OPENAI_API_KEY is not set."
-        insight.generated_at = datetime.now(timezone.utc)
+        insight.status = InsightStatus.FAILED
+        insight.error_message = "AI analysis is unavailable because OPENAI_API_KEY is not configured."
+        await db.commit()
+        return
+
+    if not audio_data:
+        insight.status = InsightStatus.FAILED
+        insight.error_message = "AI analysis requires a real session audio recording."
         await db.commit()
         return
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
             # Step 1: Transcription
-            if audio_data:
-                files = {'file': ('audio.m4a', audio_data, 'audio/m4a')}
-                data = {'model': 'whisper-1'}
-                headers = {'Authorization': f'Bearer {api_key}'}
-                transcription_response = await client.post(
-                    "https://api.openai.com/v1/audio/transcriptions",
-                    headers=headers,
-                    files=files,
-                    data=data
-                )
-                transcription_response.raise_for_status()
-                transcript = transcription_response.json().get('text', '')
-            else:
-                transcript = "This is a placeholder transcript of the group discussion."
+            files = {'file': ('audio.m4a', audio_data, 'audio/m4a')}
+            data = {'model': 'whisper-1'}
+            headers = {'Authorization': f'Bearer {api_key}'}
+            transcription_response = await client.post(
+                "https://api.openai.com/v1/audio/transcriptions",
+                headers=headers,
+                files=files,
+                data=data
+            )
+            transcription_response.raise_for_status()
+            transcript = transcription_response.json().get('text', '')
+            if not transcript.strip():
+                raise ValueError("The supplied recording did not produce a transcript.")
+            insight.transcription = transcript
 
             # Step 2: LLM analysis
             prompt = f"Analyze the following group discussion transcript:\n\n{transcript}\n\n"
@@ -75,7 +83,7 @@ async def process_analysis(db: AsyncSession, insight_id: uuid.UUID, audio_data: 
             )
             
             chat_payload = {
-                "model": "gpt-4-turbo-preview",
+                "model": settings.OPENAI_MODEL,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt}
@@ -111,3 +119,34 @@ async def process_analysis(db: AsyncSession, insight_id: uuid.UUID, audio_data: 
         
     finally:
         await db.commit()
+
+
+async def process_analysis_task(insight_id: uuid.UUID, audio_data: Optional[bytes] = None) -> None:
+    async with async_session_maker() as db:
+        await process_analysis(db, insight_id, audio_data)
+
+
+async def get_session_insights(db: AsyncSession, session_id: uuid.UUID) -> dict:
+    insights = (
+        await db.execute(
+            select(AIInsight)
+            .where(AIInsight.session_id == session_id)
+            .order_by(AIInsight.created_at.desc())
+        )
+    ).scalars().all()
+    return {
+        "insights": [
+            {
+                "session_id": insight.session_id,
+                "participant_id": insight.participant_id,
+                "transcription": insight.transcription,
+                "strengths": insight.strengths or [],
+                "improvements": insight.improvements or [],
+                "overall_score": insight.overall_score,
+                "summary": insight.summary,
+                "status": insight.status.value,
+                "generated_at": insight.generated_at,
+            }
+            for insight in insights
+        ]
+    }
