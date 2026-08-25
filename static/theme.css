@@ -1,0 +1,277 @@
+/* SkillSwap shared theme system. Components consume the existing semantic aliases
+   (--bg, --surface, --text, --green, etc.) so both themes stay centralized. */
+:root {
+  color-scheme: dark;
+  --bg-primary: #080B0F;
+  --bg-secondary: #0B0F14;
+  --surface-primary: #0E1117;
+  --surface-secondary: #141920;
+  --surface-elevated: #1A2230;
+  --text-primary: #F0F2F7;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border: #1E2530;
+  --border-strong: #252D3A;
+  --accent: #A8FF3E;
+  --accent-hover: #BFFF5A;
+  --accent-strong: #7ACC1A;
+  --accent-dim: #5F9F32;
+  --accent-soft: rgba(168, 255, 62, 0.07);
+  --accent-03: rgba(168, 255, 62, 0.03);
+  --accent-08: rgba(168, 255, 62, 0.08);
+  --accent-09: rgba(168, 255, 62, 0.09);
+  --accent-10: rgba(168, 255, 62, 0.10);
+  --accent-12: rgba(168, 255, 62, 0.12);
+  --accent-15: rgba(168, 255, 62, 0.15);
+  --accent-18: rgba(168, 255, 62, 0.18);
+  --accent-20: rgba(168, 255, 62, 0.20);
+  --accent-25: rgba(168, 255, 62, 0.25);
+  --accent-28: rgba(168, 255, 62, 0.28);
+  --accent-30: rgba(168, 255, 62, 0.30);
+  --accent-34: rgba(168, 255, 62, 0.34);
+  --accent-35: rgba(168, 255, 62, 0.35);
+  --accent-40: rgba(168, 255, 62, 0.40);
+  --accent-foreground: #080B0F;
+  --accent-foreground-muted: rgba(8, 11, 15, 0.30);
+  --success: #10B981;
+  --warning: #FCD34D;
+  --danger: #F87171;
+  --danger-soft: rgba(248, 113, 113, 0.08);
+  --danger-soft-strong: rgba(248, 113, 113, 0.15);
+  --danger-hover: rgba(248, 113, 113, 0.25);
+  --danger-border: rgba(248, 113, 113, 0.30);
+  --warning-soft: rgba(252, 211, 77, 0.08);
+  --warning-border: rgba(252, 211, 77, 0.30);
+  --header-bg: rgba(8, 11, 15, 0.80);
+  --header-bg-solid: rgba(8, 11, 15, 0.97);
+  --topbar-bg: rgba(8, 11, 15, 0.90);
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --participant-art-bg: #0B0F12;
+  --participant-art-bg-2: #10151A;
+  --participant-art-border: rgba(255, 255, 255, 0.05);
+  --neutral-soft: rgba(107, 114, 128, 0.10);
+  --neutral-border: rgba(107, 114, 128, 0.20);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.24);
+  --glow: 0 0 24px var(--accent-12);
+  --hero-image: url('/static/hero-dark.png?v=1');
+  --hero-fade-solid: #080B0F;
+  --hero-fade-heavy: rgba(8, 11, 15, 0.98);
+  --hero-fade-mid: rgba(8, 11, 15, 0.65);
+  --hero-fade-clear: rgba(8, 11, 15, 0.05);
+  --hero-fade-mobile: rgba(8, 11, 15, 0.20);
+  --brand-mark-color: var(--accent);
+
+  /* Backward-compatible aliases used by the current components. */
+  --bg: var(--bg-primary);
+  --surface: var(--surface-primary);
+  --surface-2: var(--surface-secondary);
+  --surface-3: var(--surface-elevated);
+  --line: var(--border);
+  --line-2: var(--border-strong);
+  --text: var(--text-primary);
+  --text-dim: var(--text-muted);
+  --text-mid: var(--text-secondary);
+  --green: var(--accent);
+  --green-d: var(--accent-strong);
+  --green-dim: var(--accent-dim);
+  --green-glow: var(--accent-12);
+  --green-muted: var(--accent-soft);
+  --rose: var(--danger);
+  --amber: var(--warning);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #F1F5F9;
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F1F5F9;
+  --surface-elevated: #E7EEF3;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --accent: #14B8A6;
+  --accent-hover: #0F9F92;
+  --accent-strong: #0F9F92;
+  --accent-dim: #0D9488;
+  --accent-soft: rgba(20, 184, 166, 0.09);
+  --accent-03: rgba(20, 184, 166, 0.03);
+  --accent-08: rgba(20, 184, 166, 0.08);
+  --accent-09: rgba(20, 184, 166, 0.09);
+  --accent-10: rgba(20, 184, 166, 0.10);
+  --accent-12: rgba(20, 184, 166, 0.12);
+  --accent-15: rgba(20, 184, 166, 0.15);
+  --accent-18: rgba(20, 184, 166, 0.18);
+  --accent-20: rgba(20, 184, 166, 0.20);
+  --accent-25: rgba(20, 184, 166, 0.25);
+  --accent-28: rgba(20, 184, 166, 0.28);
+  --accent-30: rgba(20, 184, 166, 0.30);
+  --accent-34: rgba(20, 184, 166, 0.34);
+  --accent-35: rgba(20, 184, 166, 0.35);
+  --accent-40: rgba(20, 184, 166, 0.40);
+  --accent-foreground: #FFFFFF;
+  --accent-foreground-muted: rgba(255, 255, 255, 0.34);
+  --warning: #D97706;
+  --danger: #DC2626;
+  --danger-soft: rgba(220, 38, 38, 0.07);
+  --danger-soft-strong: rgba(220, 38, 38, 0.12);
+  --danger-hover: rgba(220, 38, 38, 0.18);
+  --danger-border: rgba(220, 38, 38, 0.26);
+  --warning-soft: rgba(217, 119, 6, 0.08);
+  --warning-border: rgba(217, 119, 6, 0.25);
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --header-bg-solid: rgba(255, 255, 255, 0.97);
+  --topbar-bg: rgba(255, 255, 255, 0.92);
+  --chart-grid: rgba(15, 23, 42, 0.10);
+  --participant-art-bg: #E7EEF3;
+  --participant-art-bg-2: #F1F5F9;
+  --participant-art-border: rgba(15, 23, 42, 0.08);
+  --neutral-soft: rgba(100, 116, 139, 0.08);
+  --neutral-border: rgba(100, 116, 139, 0.18);
+  --shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  --glow: 0 0 18px rgba(20, 184, 166, 0.10);
+  --hero-image: url('/static/hero-light.png?v=1');
+  --hero-fade-solid: #F8FAFC;
+  --hero-fade-heavy: rgba(248, 250, 252, 0.98);
+  --hero-fade-mid: rgba(248, 250, 252, 0.72);
+  --hero-fade-clear: rgba(248, 250, 252, 0.04);
+  --hero-fade-mobile: rgba(248, 250, 252, 0.20);
+}
+
+/* Brand mark uses the exact source SVG as a mask so its shape remains unchanged
+   while the approved accent treatment follows the active theme. */
+.brand-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--brand-mark-color);
+  -webkit-mask: url('/static/skillswap-mark.svg') center / contain no-repeat;
+  mask: url('/static/skillswap-mark.svg') center / contain no-repeat;
+}
+
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-primary);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-40);
+  background: var(--accent-soft);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.theme-toggle svg { width: 18px; height: 18px; }
+.auth-theme-toggle { position: fixed; top: 22px; right: 24px; z-index: 20; }
+
+body,
+header,
+footer,
+.topbar,
+.panel,
+.stat-card,
+.activity-item,
+.room-type-card,
+.participant-card,
+.team-card-face,
+input,
+select {
+  transition-property: background-color, color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+
+header { background: var(--header-bg); }
+.topbar { background: var(--topbar-bg); }
+.hero { background: var(--bg-primary); }
+.hero-art,
+.hero-mobile-art { background-image: var(--hero-image); }
+.hero-art::after {
+  background: linear-gradient(90deg, var(--hero-fade-solid) 0%, var(--hero-fade-heavy) 25%, var(--hero-fade-mid) 48%, var(--hero-fade-clear) 70%);
+}
+.hero-mobile-art::after {
+  background:
+    linear-gradient(180deg, transparent 76%, var(--hero-fade-solid) 100%),
+    linear-gradient(90deg, var(--hero-fade-solid) 0%, var(--hero-fade-mobile) 14%, transparent 28%);
+}
+
+html[data-theme="light"] .panel,
+html[data-theme="light"] .stat-card,
+html[data-theme="light"] .arena-card,
+html[data-theme="light"] .why-visual,
+html[data-theme="light"] .impact-card,
+html[data-theme="light"] .team-card-face,
+html[data-theme="light"] .guest-section {
+  box-shadow: var(--shadow);
+}
+
+html[data-theme="light"] .btn-green,
+html[data-theme="light"] .btn-submit,
+html[data-theme="light"] .team-linkedin {
+  color: var(--accent-foreground);
+  box-shadow: 0 8px 20px var(--accent-15);
+}
+
+html[data-theme="light"] .btn-green:hover,
+html[data-theme="light"] .btn-submit:hover,
+html[data-theme="light"] .team-linkedin:hover,
+html[data-theme="light"] .team-linkedin:focus-visible {
+  background: var(--accent-hover);
+  box-shadow: 0 10px 24px var(--accent-20);
+}
+
+html[data-theme="light"] .avatar-portrait {
+  background: var(--participant-art-bg);
+  border-color: var(--participant-art-border);
+}
+html[data-theme="light"] .participant-card.empty .avatar-portrait {
+  background: linear-gradient(145deg, var(--participant-art-bg), var(--participant-art-bg-2));
+}
+
+/* The approved light artwork has transparent space on both sides, unlike the
+   dark full-bleed asset. Offset only its paint layer so the shared hero layout
+   and text geometry remain unchanged. */
+@media (min-width: 1025px) {
+  html[data-theme="light"] .hero-art { background-position: calc(100% + 370px) bottom; }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+  html[data-theme="light"] .hero-art { background-position: calc(100% + 280px) bottom; }
+}
+@media (max-width: 768px) {
+  html[data-theme="light"] .hero-mobile-art {
+    background-position: calc(100% + clamp(110px, 28vw, 180px)) bottom;
+  }
+}
+
+#chart-line { stroke: var(--accent); }
+#chart-gradient-start { stop-color: var(--accent); }
+#radar-bg,
+#rl1, #rl2, #rl3, #rl4, #rl5 { stroke: var(--chart-grid); }
+#radar-fill { fill: var(--accent-15); stroke: var(--accent); }
+#rl-t1, #rl-t2, #rl-t3, #rl-t4, #rl-t5 { fill: var(--text-muted); }
+
+@media (max-width: 480px) {
+  .auth-theme-toggle { top: 16px; right: 16px; }
+  #nav-signin { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  body,
+  header,
+  footer { transition: none; }
+}

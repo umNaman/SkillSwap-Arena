@@ -7,25 +7,15 @@
 <meta name="description" content="Anonymous arenas for employability skills. Group Discussions, Debates, Coding Interviews and Mock Interviews. Practice with real peers, get real feedback.">
 <meta property="og:title" content="SkillSwap — Practice. Compete. Improve. Anonymously.">
 <meta property="og:description" content="Anonymous arenas for employability skills. Join live Group Discussions with real peers.">
+<meta name="theme-color" content="#080B0F">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/static/theme.js"></script>
 
 <style>
 :root {
-  --bg:         #080B0F;
-  --surface:    #0E1117;
-  --surface-2:  #141920;
-  --line:       #1E2530;
-  --line-2:     #252D3A;
-  --text:       #F0F2F7;
-  --text-dim:   #6B7280;
-  --text-mid:   #9CA3AF;
-  --green:      #A8FF3E;
-  --green-d:    #7ACC1A;
-  --green-glow: rgba(168,255,62,0.12);
-  --green-muted: rgba(168,255,62,0.07);
   --display:    'Outfit', sans-serif;
   --sans:       'Inter', system-ui, sans-serif;
   --mono:       'JetBrains Mono', ui-monospace, monospace;
@@ -54,7 +44,7 @@ button { font: inherit; }
   }
 }
 
-::selection { background: var(--green); color: #080B0F; }
+::selection { background: var(--green); color: var(--accent-foreground); }
 
 /* ──── TYPOGRAPHY ──── */
 h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.02em; }
@@ -73,12 +63,12 @@ h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.02em; }
 }
 .btn:hover { transform: translateY(-1px); }
 .btn-green {
-  background: var(--green); color: #080B0F;
-  box-shadow: 0 0 20px rgba(168,255,62,0.25);
+  background: var(--green); color: var(--accent-foreground);
+  box-shadow: 0 0 20px var(--accent-25);
 }
 .btn-green:hover {
-  background: #bfff5a;
-  box-shadow: 0 0 32px rgba(168,255,62,0.4);
+  background: var(--accent-hover);
+  box-shadow: 0 0 32px var(--accent-40);
 }
 .btn-outline {
   background: transparent; color: var(--text); border-color: var(--line-2);
@@ -90,7 +80,7 @@ h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.02em; }
 /* ──── NAVIGATION ──── */
 header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(8,11,15,0.8); backdrop-filter: blur(12px);
+  background: var(--header-bg); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   transition: background 0.3s ease;
 }
@@ -124,14 +114,12 @@ header {
   display: flex; align-items: center;
   overflow: hidden;
   padding-top: 72px;
-  background: #080B0F;
+  background: var(--bg);
   isolation: isolate;
 }
 .hero-art {
   position: absolute; inset: 72px 0 0;
-  background-image:
-    url('/static/hero-brand-overlay.svg?v=2'),
-    url('/static/hero_figure.png?v=2');
+  background-image: var(--hero-image);
   background-repeat: no-repeat;
   background-position: center right;
   background-size: auto 100%;
@@ -144,10 +132,10 @@ header {
   position: absolute; inset: 0;
   background: linear-gradient(
     90deg,
-    #080B0F 0%,
-    rgba(8,11,15,0.98) 25%,
-    rgba(8,11,15,0.65) 48%,
-    rgba(8,11,15,0.05) 70%
+    var(--hero-fade-solid) 0%,
+    var(--hero-fade-heavy) 25%,
+    var(--hero-fade-mid) 48%,
+    var(--hero-fade-clear) 70%
   );
   pointer-events: none;
 }
@@ -159,7 +147,7 @@ header {
 .hero-content { position:relative; z-index:1; width:min(50vw, 600px); max-width:600px; }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--green-muted); border: 1px solid rgba(168,255,62,0.2);
+  background: var(--green-muted); border: 1px solid var(--accent-20);
   border-radius: 100px; padding: 6px 14px;
   font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--green); margin-bottom: 28px;
@@ -231,10 +219,10 @@ header {
   .hero-art::after {
     background: linear-gradient(
       90deg,
-      #080B0F 0%,
-      rgba(8,11,15,0.98) 32%,
-      rgba(8,11,15,0.78) 51%,
-      rgba(8,11,15,0.06) 72%
+      var(--hero-fade-solid) 0%,
+      var(--hero-fade-heavy) 32%,
+      var(--hero-fade-mid) 51%,
+      var(--hero-fade-clear) 72%
     );
   }
   .hero-content { width: 54vw; }
@@ -267,9 +255,7 @@ header {
     margin-top: 18px;
     transform: translateX(-50%);
     overflow: hidden;
-    background-image:
-      url('/static/hero-brand-overlay.svg?v=2'),
-      url('/static/hero_figure.png?v=2');
+    background-image: var(--hero-image);
     background-repeat: no-repeat;
     background-size: auto 100%;
     background-position: right bottom;
@@ -280,8 +266,8 @@ header {
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(180deg, transparent 76%, #080B0F 100%),
-      linear-gradient(90deg, #080B0F 0%, rgba(8,11,15,0.2) 14%, transparent 28%);
+      linear-gradient(180deg, transparent 76%, var(--hero-fade-solid) 100%),
+      linear-gradient(90deg, var(--hero-fade-solid) 0%, var(--hero-fade-mid) 14%, transparent 28%);
   }
   .scroll-indicator { display: none; }
 }
@@ -377,19 +363,19 @@ section { padding: 100px 0; }
   background: var(--green-muted); opacity: 0;
   transition: opacity 0.2s ease;
 }
-.arena-card:hover { border-color: rgba(168,255,62,0.3); transform: translateY(-2px); }
+.arena-card:hover { border-color: var(--accent-30); transform: translateY(-2px); }
 .arena-card:hover::before { opacity: 1; }
-.arena-card.primary { border-color: rgba(168,255,62,0.28); }
+.arena-card.primary { border-color: var(--accent-28); }
 
 .arena-badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: var(--green-muted); border: 1px solid rgba(168,255,62,0.25);
+  background: var(--green-muted); border: 1px solid var(--accent-25);
   border-radius: 100px; padding: 4px 12px;
   font-family: var(--mono); font-size: 0.68rem; color: var(--green);
   text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px;
 }
 .arena-badge.coming-soon {
-  background: rgba(107,114,128,0.1); border-color: rgba(107,114,128,0.2);
+  background: var(--neutral-soft); border-color: var(--neutral-border);
   color: var(--text-dim);
 }
 .arena-icon {
@@ -501,12 +487,12 @@ section { padding: 100px 0; }
 .team-card:hover .team-card-face,
 .team-card:focus-visible .team-card-face,
 .team-card.is-flipped .team-card-face {
-  border-color: rgba(168,255,62,0.34);
+  border-color: var(--accent-34);
 }
 .team-card-back {
   transform: rotateY(180deg);
   background:
-    radial-gradient(circle at 50% 25%, rgba(168,255,62,0.09), transparent 52%),
+    radial-gradient(circle at 50% 25%, var(--accent-09), transparent 52%),
     var(--surface);
 }
 .team-avatar {
@@ -531,13 +517,13 @@ section { padding: 100px 0; }
 .team-linkedin {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 10px 12px; border-radius: 8px;
-  color: #080B0F; background: var(--green); border: 1px solid var(--green);
+  color: var(--accent-foreground); background: var(--green); border: 1px solid var(--green);
   font-family: var(--sans); font-size: 0.76rem; font-weight: 700;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 .team-linkedin:hover,
 .team-linkedin:focus-visible {
-  background: #bfff5a; box-shadow: 0 0 18px rgba(168,255,62,0.2);
+  background: var(--accent-hover); box-shadow: 0 0 18px var(--accent-20);
 }
 .team-linkedin svg { width: 15px; height: 15px; flex-shrink: 0; }
 .team-flip-back {
@@ -609,6 +595,7 @@ footer {
 .reveal-delay-3 { transition-delay: 0.3s; }
 .reveal-delay-4 { transition-delay: 0.4s; }
 </style>
+<link rel="stylesheet" href="/static/theme.css?v=hero-position-2">
 </head>
 <body>
 
@@ -617,7 +604,7 @@ footer {
   <div class="container nav">
     <a href="/" class="logo" id="logo-link">
       <div class="logo-mark">
-        <img src="/static/skillswap-mark.svg" alt="">
+        <span class="brand-mark" aria-hidden="true"></span>
       </div>
       SkillSwap
     </a>
@@ -628,6 +615,7 @@ footer {
       <a href="#impact">Impact</a>
     </nav>
     <div class="nav-right">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"></button>
       <a href="/auth" class="btn btn-outline btn-sm" id="nav-signin">Sign In</a>
       <a href="/auth" class="btn btn-green btn-sm" id="nav-enter">Enter Arena</a>
     </div>
@@ -1025,7 +1013,7 @@ footer {
       <div>
         <a href="/" class="logo footer-logo">
           <div class="logo-mark">
-            <img src="/static/skillswap-mark.svg" alt="">
+            <span class="brand-mark" aria-hidden="true"></span>
           </div>
           SkillSwap
         </a>
@@ -1118,9 +1106,9 @@ document.querySelectorAll('.team-card').forEach(card => {
 const header = document.getElementById('site-header');
 window.addEventListener('scroll', () => {
   if (window.scrollY > 60) {
-    header.style.background = 'rgba(8,11,15,0.97)';
+    header.style.background = 'var(--header-bg-solid)';
   } else {
-    header.style.background = 'rgba(8,11,15,0.8)';
+    header.style.background = 'var(--header-bg)';
   }
 }, { passive: true });
 

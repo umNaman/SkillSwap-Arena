@@ -5,31 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SkillSwap — Arena</title>
 <meta name="description" content="SkillSwap Group Discussion Arena. Practice anonymously with real peers.">
+<meta name="theme-color" content="#080B0F">
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/static/theme.js"></script>
 <style>
 /* ════════════════════════════════════════
    DESIGN TOKENS
 ════════════════════════════════════════ */
 :root {
-  --bg:          #080B0F;
-  --surface:     #0E1117;
-  --surface-2:   #141920;
-  --surface-3:   #1A2230;
-  --line:        #1E2530;
-  --line-2:      #252D3A;
-  --text:        #F0F2F7;
-  --text-dim:    #6B7280;
-  --text-mid:    #9CA3AF;
-  --green:       #A8FF3E;
-  --green-d:     #7ACC1A;
-  --green-dim:   #5F9F32;
-  --green-glow:  rgba(168,255,62,0.12);
-  --green-muted: rgba(168,255,62,0.07);
-  --rose:        #F87171;
-  --amber:       #FCD34D;
   --display:     'Outfit', sans-serif;
   --sans:        'Inter', system-ui, sans-serif;
   --mono:        'JetBrains Mono', ui-monospace, monospace;
@@ -45,7 +31,7 @@ body {
   font-family:var(--sans); -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
-::selection { background:var(--green); color:#080B0F; }
+::selection { background:var(--green); color:var(--accent-foreground); }
 a { color:inherit; text-decoration:none; }
 button { font:inherit; cursor:pointer; }
 img { max-width:100%; display:block; }
@@ -86,7 +72,7 @@ img { max-width:100%; display:block; }
 .anon-badge {
   font-family:var(--mono); font-size:0.6rem; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--green);
-  background:var(--green-muted); border:1px solid rgba(168,255,62,0.2);
+  background:var(--green-muted); border:1px solid var(--accent-20);
   border-radius:100px; padding:2px 8px;
 }
 .user-meta { font-size:0.78rem; color:var(--text-dim); }
@@ -116,7 +102,7 @@ img { max-width:100%; display:block; }
   color:var(--text-dim); transition:background 0.15s, color 0.15s;
   border:none; background:none; width:100%; text-align:left;
 }
-.logout-btn:hover { background:rgba(248,113,113,0.08); color:var(--rose); }
+.logout-btn:hover { background:var(--danger-soft); color:var(--rose); }
 
 /* MAIN CONTENT AREA */
 .main-area {
@@ -142,7 +128,7 @@ img { max-width:100%; display:block; }
 /* TOP BAR */
 .topbar {
   position:sticky; top:0; z-index:50;
-  background:rgba(8,11,15,0.9); backdrop-filter:blur(10px);
+  background:var(--topbar-bg); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 28px; gap:16px;
@@ -160,7 +146,7 @@ img { max-width:100%; display:block; }
 @media(max-width:900px){ .mobile-menu-btn{ display:flex; } }
 .topbar-avatar {
   width:34px; height:34px; border-radius:50%;
-  background:var(--green-muted); border:1px solid rgba(168,255,62,0.25);
+  background:var(--green-muted); border:1px solid var(--accent-25);
   display:flex; align-items:center; justify-content:center;
   font-family:var(--display); font-weight:700; font-size:0.85rem; color:var(--green);
 }
@@ -188,12 +174,12 @@ img { max-width:100%; display:block; }
   transition:transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 .btn:hover { transform:translateY(-1px); }
-.btn-green { background:var(--green); color:#080B0F; box-shadow:0 0 16px rgba(168,255,62,0.2); }
-.btn-green:hover { background:#bfff5a; box-shadow:0 0 24px rgba(168,255,62,0.35); }
+.btn-green { background:var(--green); color:var(--accent-foreground); box-shadow:0 0 16px var(--accent-20); }
+.btn-green:hover { background:var(--accent-hover); box-shadow:0 0 24px var(--accent-35); }
 .btn-ghost { background:transparent; color:var(--text); border-color:var(--line); }
 .btn-ghost:hover { border-color:var(--line-2); background:var(--surface); }
-.btn-danger { background:transparent; color:var(--rose); border-color:rgba(248,113,113,0.3); }
-.btn-danger:hover { background:rgba(248,113,113,0.08); border-color:var(--rose); }
+.btn-danger { background:transparent; color:var(--rose); border-color:var(--danger-border); }
+.btn-danger:hover { background:var(--danger-soft); border-color:var(--rose); }
 .btn-block { width:100%; }
 .btn-lg { padding:14px 28px; font-size:1rem; }
 .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
@@ -259,21 +245,21 @@ img { max-width:100%; display:block; }
   transition:border-color 0.15s, box-shadow 0.15s;
 }
 .field input:focus, .field select:focus {
-  outline:none; border-color:rgba(168,255,62,0.4);
-  box-shadow:0 0 0 3px rgba(168,255,62,0.07);
+  outline:none; border-color:var(--accent-40);
+  box-shadow:0 0 0 3px var(--accent-soft);
 }
 .field input::placeholder { color:var(--text-dim); }
 
 /* Spinner */
 @keyframes spin { to{transform:rotate(360deg);} }
 .spinner {
-  width:16px; height:16px; border:2px solid rgba(8,11,15,0.3);
+  width:16px; height:16px; border:2px solid var(--accent-foreground-muted);
   border-top-color:currentColor; border-radius:50%;
   animation:spin 0.7s linear infinite;
 }
 .spinner-large {
   width:36px; height:36px; border-width:3px; border-top-color:var(--green);
-  border-color:rgba(168,255,62,0.2); border-top-color:var(--green);
+  border-color:var(--accent-20); border-top-color:var(--green);
 }
 
 /* Reveal animation */
@@ -282,7 +268,7 @@ img { max-width:100%; display:block; }
 
 /* Error state */
 .error-banner {
-  background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.2);
+  background:var(--danger-soft); border:1px solid var(--danger-border);
   border-radius:10px; padding:12px 16px; font-size:0.85rem; color:var(--rose);
   margin-bottom:16px; display:none;
 }
@@ -342,7 +328,7 @@ img { max-width:100%; display:block; }
   background:var(--green-muted); opacity:0;
   transition:opacity 0.2s;
 }
-.arena-card:hover { border-color:rgba(168,255,62,0.3); transform:translateY(-2px); }
+.arena-card:hover { border-color:var(--accent-30); transform:translateY(-2px); }
 .arena-card:hover::before { opacity:1; }
 .arena-card.soon { opacity:0.6; cursor:default; }
 .arena-card.soon:hover { transform:none; border-color:var(--line); }
@@ -567,7 +553,7 @@ img { max-width:100%; display:block; }
 /* Topic reveal */
 .topic-reveal {
   display:none; margin-top:24px;
-  background:var(--surface); border:1px solid rgba(168,255,62,0.2);
+  background:var(--surface); border:1px solid var(--accent-20);
   border-radius:14px; padding:28px; text-align:center;
   animation:fadeIn 0.5s ease;
 }
@@ -628,13 +614,13 @@ img { max-width:100%; display:block; }
 }
 .live-chip {
   display:inline-flex; align-items:center; gap:6px;
-  background:rgba(168,255,62,0.1); border:1px solid rgba(168,255,62,0.25);
+  background:var(--accent-10); border:1px solid var(--accent-25);
   border-radius:100px; padding:3px 10px;
   font-family:var(--mono); font-size:0.62rem; color:var(--green); letter-spacing:0.08em;
   text-transform:uppercase;
 }
 .live-chip.preparation {
-  background:rgba(252,211,77,0.08); border-color:rgba(252,211,77,0.3);
+  background:var(--warning-soft); border-color:var(--warning-border);
   color:var(--amber);
 }
 .live-chip.preparation .live-dot {
@@ -714,8 +700,8 @@ img { max-width:100%; display:block; }
 }
 .participant-card.speaking {
   border-color:var(--green);
-  box-shadow:0 0 0 1px rgba(168,255,62,0.15), 0 0 24px rgba(168,255,62,0.12);
-  background:rgba(168,255,62,0.03);
+  box-shadow:0 0 0 1px var(--accent-15), 0 0 24px var(--accent-12);
+  background:var(--accent-03);
 }
 .participant-card.empty {
   opacity:0.3; border-style:dashed;
@@ -726,20 +712,20 @@ img { max-width:100%; display:block; }
   width:100%; height:128px; border-radius:10px; margin:0 auto 12px;
   position:relative; overflow:hidden; display:flex;
   align-items:flex-end; justify-content:center;
-  background:#0b0f12;
-  border:1px solid rgba(255,255,255,0.05);
+  background:var(--participant-art-bg);
+  border:1px solid var(--participant-art-border);
   transition:border-color 0.2s;
 }
 .speaking .avatar-portrait {
   border-color:var(--green);
-  box-shadow:0 0 12px rgba(168,255,62,0.2);
+  box-shadow:0 0 12px var(--accent-20);
 }
 .avatar-portrait img {
   width:100%; height:100%; display:block;
   object-fit:cover; object-position:center 24%;
 }
 .participant-card.empty .avatar-portrait {
-  background:linear-gradient(145deg, #0b0f12, #10151a);
+  background:linear-gradient(145deg, var(--participant-art-bg), var(--participant-art-bg-2));
 }
 
 .p-alias {
@@ -780,14 +766,14 @@ img { max-width:100%; display:block; }
   transition:background 0.15s, border-color 0.15s, color 0.15s;
 }
 .arena-ctrl-btn:hover { background:var(--surface-3); }
-.arena-ctrl-btn.muted { background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.3); color:var(--rose); }
-.arena-ctrl-btn.leave { background:rgba(248,113,113,0.15); border-color:var(--rose); color:var(--rose); }
-.arena-ctrl-btn.leave:hover { background:rgba(248,113,113,0.25); }
+.arena-ctrl-btn.muted { background:var(--danger-soft); border-color:var(--danger-border); color:var(--rose); }
+.arena-ctrl-btn.leave { background:var(--danger-soft-strong); border-color:var(--rose); color:var(--rose); }
+.arena-ctrl-btn.leave:hover { background:var(--danger-hover); }
 .arena-ctrl-btn.complete {
-  background:rgba(168,255,62,0.1); border-color:rgba(168,255,62,0.35);
+  background:var(--accent-10); border-color:var(--accent-35);
   color:var(--green);
 }
-.arena-ctrl-btn.complete:hover { background:rgba(168,255,62,0.18); }
+.arena-ctrl-btn.complete:hover { background:var(--accent-18); }
 .arena-ctrl-btn:disabled { opacity:0.4; cursor:not-allowed; }
 .arena-ctrl-label {
   font-family:var(--mono); font-size:0.62rem; color:var(--text-dim);
@@ -797,8 +783,8 @@ img { max-width:100%; display:block; }
 .arena-status-bar { display:flex; align-items:center; gap:12px; }
 .call-status { font-size:0.82rem; color:var(--text-dim); }
 .resume-btn {
-  padding:7px 14px; border-radius:7px; border:1px solid rgba(252,211,77,0.3);
-  background:rgba(252,211,77,0.08); color:var(--amber);
+  padding:7px 14px; border-radius:7px; border:1px solid var(--warning-border);
+  background:var(--warning-soft); color:var(--amber);
   font-size:0.82rem; display:none;
 }
 .resume-btn.visible { display:inline-flex; }
@@ -941,6 +927,7 @@ tr.self-row .star { cursor:not-allowed; }
 .empty-state h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
 .empty-state p { font-size:0.87rem; }
 </style>
+<link rel="stylesheet" href="/static/theme.css">
 </head>
 <body>
 
@@ -949,7 +936,7 @@ tr.self-row .star { cursor:not-allowed; }
   <nav class="sidebar" id="sidebar">
     <a href="/" class="sidebar-logo" onclick="handleLogoNavigation(event)">
       <div class="logo-mark">
-        <img src="/static/skillswap-mark.svg" alt="">
+        <span class="brand-mark" aria-hidden="true"></span>
       </div>
       SkillSwap
     </a>
@@ -993,6 +980,7 @@ tr.self-row .star { cursor:not-allowed; }
         <div class="topbar-title" id="topbar-title">Dashboard</div>
       </div>
       <div class="topbar-right">
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"></button>
         <div class="connection-pill" id="conn-pill" style="display:none;">
           <div class="connection-dot"></div>
           <span id="conn-label">Connected</span>
@@ -1087,12 +1075,12 @@ tr.self-row .star { cursor:not-allowed; }
             <svg class="progress-chart-svg" id="progress-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#A8FF3E" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#A8FF3E" stop-opacity="0"/>
+                  <stop id="chart-gradient-start" offset="0%" stop-color="var(--green)" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="var(--green)" stop-opacity="0"/>
                 </linearGradient>
               </defs>
               <path id="chart-area" fill="url(#chartGrad)" d=""/>
-              <path id="chart-line" fill="none" stroke="#A8FF3E" stroke-width="2" stroke-linecap="round" d=""/>
+              <path id="chart-line" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" d=""/>
             </svg>
           </div>
           <div id="progress-empty" style="display:none;color:var(--text-dim);font-size:0.85rem;padding:18px 0;">Complete more rated GDs to see your progress.</div>
@@ -1442,20 +1430,20 @@ tr.self-row .star { cursor:not-allowed; }
             </div>
             <div class="radar-wrap">
               <svg class="radar-svg" id="radar-svg" viewBox="-90 -90 180 180">
-                <polygon id="radar-bg" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <polygon id="radar-fill" fill="rgba(168,255,62,0.15)" stroke="var(--green)" stroke-width="1.5"/>
+                <polygon id="radar-bg" fill="none" stroke="var(--chart-grid)" stroke-width="1"/>
+                <polygon id="radar-fill" fill="var(--accent-15)" stroke="var(--green)" stroke-width="1.5"/>
                 <!-- axis lines -->
-                <line id="rl1" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line id="rl2" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line id="rl3" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line id="rl4" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-                <line id="rl5" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <line id="rl1" stroke="var(--chart-grid)" stroke-width="1"/>
+                <line id="rl2" stroke="var(--chart-grid)" stroke-width="1"/>
+                <line id="rl3" stroke="var(--chart-grid)" stroke-width="1"/>
+                <line id="rl4" stroke="var(--chart-grid)" stroke-width="1"/>
+                <line id="rl5" stroke="var(--chart-grid)" stroke-width="1"/>
                 <!-- labels -->
-                <text id="rl-t1" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
-                <text id="rl-t2" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
-                <text id="rl-t3" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
-                <text id="rl-t4" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
-                <text id="rl-t5" font-family="JetBrains Mono,monospace" font-size="9" fill="#6B7280" text-anchor="middle"/>
+                <text id="rl-t1" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--text-dim)" text-anchor="middle"/>
+                <text id="rl-t2" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--text-dim)" text-anchor="middle"/>
+                <text id="rl-t3" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--text-dim)" text-anchor="middle"/>
+                <text id="rl-t4" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--text-dim)" text-anchor="middle"/>
+                <text id="rl-t5" font-family="JetBrains Mono,monospace" font-size="9" fill="var(--text-dim)" text-anchor="middle"/>
               </svg>
             </div>
           </div>
@@ -1525,7 +1513,7 @@ tr.self-row .star { cursor:not-allowed; }
         </div>
         <div style="display:flex;gap:12px;margin-top:20px;justify-content:flex-end;">
           <button class="btn btn-ghost" onclick="showScreen('dashboard')">Back to Dashboard</button>
-          <button class="btn btn-green" onclick="startGDFlow()">Play Again</button>
+          <button class="btn btn-green" onclick="startGDFlow()">Practice Again</button>
         </div>
       </div>
     </div>
@@ -1715,7 +1703,9 @@ async function handleLogout() {
     if (!window.confirm('Leave this GD early and log out?')) return;
     await leaveArena(null);
   }
+  const savedTheme = localStorage.getItem('skillswap-theme');
   localStorage.clear();
+  if (savedTheme) localStorage.setItem('skillswap-theme', savedTheme);
   sessionStorage.clear();
   window.location.href = '/';
 }
@@ -2036,7 +2026,7 @@ async function findRoom(attempt = 0) {
   errorEl.classList.remove('visible');
   const btn = document.getElementById('find-room-btn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="border-top-color:#080B0F;"></div> Finding Room…';
+  btn.innerHTML = '<div class="spinner" style="border-top-color:var(--accent-foreground);"></div> Finding Room…';
   window.startSessionSent = false;
   clearInterval(matchmakingCountdown);
   matchmakingCountdown = null;
@@ -2400,14 +2390,46 @@ async function startLiveDiscussion(duration) {
 /* ──────────────────────────────────────
    PARTICIPANT GRID (6 slots)
 ────────────────────────────────────── */
-const AVATAR_ASSETS = [
-  '/static/avatars/gd-avatar-1.png',
-  '/static/avatars/gd-avatar-2.png',
-  '/static/avatars/gd-avatar-3.png',
-  '/static/avatars/gd-avatar-4.png',
-  '/static/avatars/gd-avatar-5.png',
-  '/static/avatars/gd-avatar-6.png',
+
+/**
+ * Centralised avatar asset map.
+ * All theme-specific paths live here — nowhere else in the codebase.
+ *
+ * AVATAR_MAP[n] = { dark: '…', light: '…' }   (n is 0-based slot index)
+ *
+ * getAvatarAsset(index, theme?) → path string
+ *   - index  : 0–5 (wraps safely)
+ *   - theme  : 'light' | 'dark'  (defaults to current document theme)
+ *   - Falls back to dark asset if a light asset is missing (onerror on <img>)
+ */
+const AVATAR_MAP = [
+  { dark: '/static/avatars/gd-avatar-1-dark.png', light: '/static/avatars/gd-avatar-1-light.png' },
+  { dark: '/static/avatars/gd-avatar-2-dark.png', light: '/static/avatars/gd-avatar-2-light.png' },
+  { dark: '/static/avatars/gd-avatar-3-dark.png', light: '/static/avatars/gd-avatar-3-light.png' },
+  { dark: '/static/avatars/gd-avatar-4-dark.png', light: '/static/avatars/gd-avatar-4-light.png' },
+  { dark: '/static/avatars/gd-avatar-5-dark.png', light: '/static/avatars/gd-avatar-5-light.png' },
+  { dark: '/static/avatars/gd-avatar-6-dark.png', light: '/static/avatars/gd-avatar-6-light.png' },
 ];
+
+function getAvatarAsset(index, theme) {
+  const slot = AVATAR_MAP[index % AVATAR_MAP.length];
+  const resolved = theme || (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  return slot[resolved] || slot.dark;  // fallback: always return dark if variant missing
+}
+
+/** Refresh all avatar <img> elements whenever the theme changes. */
+function refreshArenaAvatars() {
+  const grid = document.getElementById('participants-grid');
+  if (!grid) return;
+  grid.querySelectorAll('.participant-card:not(.empty)').forEach(card => {
+    const seat = parseInt(card.dataset.seat, 10);
+    if (!seat) return;
+    const img = card.querySelector('.avatar-portrait img');
+    if (!img) return;
+    const newSrc = getAvatarAsset(seat - 1);
+    if (img.src !== newSrc) img.src = newSrc;
+  });
+}
 
 function getParticipantSeat(participant) {
   const seat = Number(participant?.seatIndex ?? participant?.seat_index);
@@ -2455,7 +2477,7 @@ function buildParticipantGrid() {
       card.dataset.pid = p.participantId || '';
       card.dataset.uid = p.agoraUid || '';
       card.innerHTML = `
-        <div class="avatar-portrait"><img src="${AVATAR_ASSETS[i]}" alt="" aria-hidden="true"></div>
+        <div class="avatar-portrait"><img src="${getAvatarAsset(i)}" alt="" aria-hidden="true" onerror="this.src=getAvatarAsset(${i},'dark')"></div>
         <div class="p-alias${isMe?' you':''}">${isMe?'You':p.alias}</div>
         <div class="p-speaking-indicator">
           <div class="p-waveform">
@@ -2760,8 +2782,8 @@ function completeSession() {
 
 function raiseHand() {
   const btn = document.getElementById('raise-hand-btn');
-  btn.style.background = 'rgba(168,255,62,0.15)';
-  btn.style.borderColor = 'rgba(168,255,62,0.4)';
+  btn.style.background = 'var(--accent-15)';
+  btn.style.borderColor = 'var(--accent-40)';
   setTimeout(() => {
     btn.style.background = '';
     btn.style.borderColor = '';
@@ -2871,7 +2893,7 @@ async function submitRatings() {
   const errEl = document.getElementById('feedback-error');
   errEl.classList.remove('visible');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="border-top-color:#080B0F;"></div> Submitting…';
+  btn.innerHTML = '<div class="spinner" style="border-top-color:var(--accent-foreground);"></div> Submitting…';
 
   const ratings = collectRatings();
 
@@ -3056,6 +3078,10 @@ function renderRadarChart(values) {
    BOOT
 ────────────────────────────────────── */
 initApp();
+
+// Swap avatar images when the user toggles dark ↔ light mode.
+// theme.js dispatches 'skillswap:themechange' every time the theme changes.
+window.addEventListener('skillswap:themechange', () => refreshArenaAvatars());
 </script>
 </body>
 </html>

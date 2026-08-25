@@ -5,23 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In — SkillSwap</title>
 <meta name="description" content="Sign in, create an account, or continue anonymously. SkillSwap requires no real identity to participate.">
+<meta name="theme-color" content="#080B0F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/static/theme.js"></script>
 <style>
 :root {
-  --bg:         #080B0F;
-  --surface:    #0E1117;
-  --surface-2:  #141920;
-  --line:       #1E2530;
-  --line-2:     #252D3A;
-  --text:       #F0F2F7;
-  --text-dim:   #6B7280;
-  --text-mid:   #9CA3AF;
-  --green:      #A8FF3E;
-  --green-d:    #7ACC1A;
-  --green-glow: rgba(168,255,62,0.12);
-  --rose:       #F87171;
   --display:    'Outfit', sans-serif;
   --sans:       'Inter', system-ui, sans-serif;
   --mono:       'JetBrains Mono', ui-monospace, monospace;
@@ -33,7 +23,7 @@ body {
   font-family:var(--sans); -webkit-font-smoothing:antialiased;
   display:flex;
 }
-::selection { background:var(--green); color:#080B0F; }
+::selection { background:var(--green); color:var(--accent-foreground); }
 
 /* ── LAYOUT ── */
 .auth-wrapper { display:flex; width:100%; min-height:100vh; }
@@ -92,7 +82,7 @@ body {
 /* Brand atmospheric bg */
 .brand-bg {
   position:absolute; inset:0; pointer-events:none;
-  background: radial-gradient(ellipse 80% 60% at 50% 80%, rgba(168,255,62,0.05) 0%, transparent 60%);
+  background: radial-gradient(ellipse 80% 60% at 50% 80%, var(--accent-08) 0%, transparent 60%);
 }
 
 /* RIGHT FORM PANEL */
@@ -155,8 +145,8 @@ body {
   transition:border-color 0.15s, box-shadow 0.15s;
 }
 .field input:focus {
-  outline:none; border-color:rgba(168,255,62,0.4);
-  box-shadow:0 0 0 3px rgba(168,255,62,0.08);
+  outline:none; border-color:var(--accent-40);
+  box-shadow:0 0 0 3px var(--accent-08);
 }
 .field input::placeholder { color:var(--text-dim); }
 .field-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
@@ -166,14 +156,14 @@ body {
 
 .btn-submit {
   width:100%; padding:14px; border-radius:9px; border:none;
-  background:var(--green); color:#080B0F;
+  background:var(--green); color:var(--accent-foreground);
   font-family:var(--sans); font-size:0.95rem; font-weight:700;
   cursor:pointer; transition:background 0.15s, transform 0.15s, box-shadow 0.15s;
-  box-shadow:0 0 20px rgba(168,255,62,0.2);
+  box-shadow:0 0 20px var(--accent-20);
   margin-top:4px;
   display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.btn-submit:hover { background:#bfff5a; transform:translateY(-1px); box-shadow:0 0 30px rgba(168,255,62,0.35); }
+.btn-submit:hover { background:var(--accent-hover); transform:translateY(-1px); box-shadow:0 0 30px var(--accent-35); }
 .btn-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
 
 .btn-secondary {
@@ -188,8 +178,8 @@ body {
 
 /* Error / status */
 .auth-error {
-  display:none; background:rgba(248,113,113,0.08);
-  border:1px solid rgba(248,113,113,0.25); border-radius:9px;
+  display:none; background:var(--danger-soft);
+  border:1px solid var(--danger-border); border-radius:9px;
   padding:12px 16px; margin-bottom:18px;
   font-size:0.85rem; color:var(--rose); line-height:1.5;
 }
@@ -225,18 +215,20 @@ body {
 
 /* Spinner */
 @keyframes spin { to { transform:rotate(360deg); } }
-.spinner { width:16px; height:16px; border:2px solid rgba(8,11,15,0.3); border-top-color:#080B0F; border-radius:50%; animation:spin 0.7s linear infinite; }
+.spinner { width:16px; height:16px; border:2px solid var(--accent-foreground-muted); border-top-color:var(--accent-foreground); border-radius:50%; animation:spin 0.7s linear infinite; }
 </style>
+<link rel="stylesheet" href="/static/theme.css">
 </head>
 <body>
 
 <div class="auth-wrapper">
+  <button type="button" class="theme-toggle auth-theme-toggle" data-theme-toggle aria-label="Switch theme"></button>
   <!-- LEFT BRAND PANEL -->
   <div class="auth-brand">
     <div class="brand-bg"></div>
     <a href="/" class="brand-logo">
       <div class="brand-logo-mark">
-        <img src="/static/skillswap-mark.svg" alt="">
+        <span class="brand-mark" aria-hidden="true"></span>
       </div>
       SkillSwap
     </a>
@@ -280,7 +272,7 @@ body {
     <div class="auth-form-inner">
       <a href="/" class="mobile-logo">
         <div class="mobile-logo-mark">
-          <img src="/static/skillswap-mark.svg" alt="">
+          <span class="brand-mark" aria-hidden="true"></span>
         </div>
         SkillSwap
       </a>
