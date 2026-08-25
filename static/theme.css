@@ -275,3 +275,114 @@ html[data-theme="light"] .participant-card.empty .avatar-portrait {
   header,
   footer { transition: none; }
 }
+
+/* ════════════════════════════════════════
+   USER DROPDOWN
+════════════════════════════════════════ */
+.user-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.user-dropdown-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.user-dropdown-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.user-dropdown-btn > div {
+  pointer-events: none;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 8px 0;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px) scale(0.97);
+  transform-origin: top right;
+  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms;
+}
+
+.user-dropdown-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.user-dropdown-header {
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.user-dropdown-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-email {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.user-dropdown-email:empty {
+  display: none;
+}
+
+.user-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+  text-decoration: none;
+}
+
+.user-dropdown-item:hover, .user-dropdown-item:focus-visible {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.user-dropdown-item.danger {
+  color: var(--danger);
+}
+.user-dropdown-item.danger:hover, .user-dropdown-item.danger:focus-visible {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}

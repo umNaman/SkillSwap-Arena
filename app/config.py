@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     MAX_SEATS: int = 6
     PUBLIC_ROOM_POOL_SIZE: int = 3
     SEED_DEMO_DATA: bool = True
+    JUDGE0_URL: str = ""
+    JUDGE0_API_KEY: str = ""
+    JUDGE0_API_HOST: str = ""
+    JUDGE0_POLL_ATTEMPTS: int = 20
+    JUDGE0_POLL_INTERVAL_MS: int = 250
+    TURNSTILE_SITE_KEY: str = "1x00000000000000000000AA"  # Test key: always passes on localhost. Replace in prod.
+    TURNSTILE_SECRET_KEY: str = "1x0000000000000000000000000000000AA"  # Test secret. Replace in prod.
 
     @field_validator("SECRET_KEY", mode="before")
     @classmethod

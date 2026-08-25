@@ -961,6 +961,9 @@ tr.self-row .star { cursor:not-allowed; }
         <button class="nav-item" id="nav-reports" onclick="showScreen('report')">
           <span class="nav-item-ic">📊</span> Reports
         </button>
+        <button class="nav-item" onclick="window.location.href='/coding-arena'">
+          <span class="nav-item-ic">⌨</span> Coding Arena
+        </button>
       </div>
     </div>
 
@@ -1034,11 +1037,11 @@ tr.self-row .star { cursor:not-allowed; }
             <div class="arena-card-desc">Argue, Persuade, Win.</div>
             <div class="arena-card-meta">4–6 members</div>
           </div>
-          <div class="arena-card soon reveal">
-            <div class="arena-status soon">⋯ Coming Soon</div>
+          <div class="arena-card reveal" onclick="window.location.href='/coding-arena'" role="link" tabindex="0" onkeydown="if(event.key==='Enter')window.location.href='/coding-arena'">
+            <div class="arena-status live"><div class="live-dot"></div> Live</div>
             <div class="arena-card-icon">⌨️</div>
-            <div class="arena-card-name">Coding Interview</div>
-            <div class="arena-card-desc">Code, Solve, Optimise.</div>
+            <div class="arena-card-name">CODING ARENA</div>
+            <div class="arena-card-desc">Solve. Compete. Improve.</div>
             <div class="arena-card-meta">1–2 members</div>
           </div>
           <div class="arena-card soon reveal">
@@ -1522,7 +1525,15 @@ tr.self-row .star { cursor:not-allowed; }
     <div class="screen" id="screen-history">
       <div class="report-header">
         <h1>Session History</h1>
-        <p>Your past group discussions and performance.</p>
+        <p>Your past group discussions and Coding Arena performance.</p>
+      </div>
+      <div class="panel" id="coding-history-summary" style="margin-bottom:18px;">
+        <div class="panel-header"><div><div class="panel-title">CODING ARENA Progress</div><div class="panel-sub">Persistent coding stats alongside your GD history</div></div><button class="btn btn-ghost" onclick="window.location.href='/coding-arena'">Open Coding Arena</button></div>
+        <div class="stats-row" style="margin-bottom:0;grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card"><div class="stat-val" id="coding-stat-solved">—</div><div class="stat-label">Problems Solved</div></div>
+          <div class="stat-card"><div class="stat-val" id="coding-stat-wins">—</div><div class="stat-label">Head-to-Head Wins</div></div>
+          <div class="stat-card"><div class="stat-val" id="coding-stat-points">—</div><div class="stat-label">Arena Points</div></div>
+        </div>
       </div>
       <div class="empty-state" id="history-empty">
         <div class="empty-state-icon">📋</div>
@@ -1655,6 +1666,7 @@ function showScreen(name, options = {}) {
   if (name === 'report') { loadReportScreen(); setTimeout(animateReportCharts, 300); }
   if (name === 'dashboard') { loadDashboard(); }
   if (name === 'history') { renderHistory(); }
+  if (name === 'history') { loadCodingHistorySummary(); }
   return true;
 }
 
@@ -1893,6 +1905,22 @@ function renderHistory() {
       <div class="activity-score">${item.received_rating == null ? '—' : Number(item.received_rating).toFixed(1) + ' ★'}</div>
     </div>
   `).join('');
+}
+
+async function loadCodingHistorySummary() {
+  if (isAnonymous()) {
+    // Guest accounts are still persisted for the current token.
+  }
+  try {
+    const profile = await api('/api/coding/profile');
+    document.getElementById('coding-stat-solved').textContent = profile.problems_solved ?? 0;
+    document.getElementById('coding-stat-wins').textContent = profile.head_to_head_wins ?? 0;
+    document.getElementById('coding-stat-points').textContent = profile.arena_points ?? 200;
+  } catch {
+    document.getElementById('coding-stat-solved').textContent = '—';
+    document.getElementById('coding-stat-wins').textContent = '—';
+    document.getElementById('coding-stat-points').textContent = '—';
+  }
 }
 
 function showProgressEmpty() {

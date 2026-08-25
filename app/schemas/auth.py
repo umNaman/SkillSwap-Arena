@@ -18,6 +18,7 @@ class AnonymousLoginRequest(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     alias: str = Field(min_length=1, max_length=14)
     cohort_code: Optional[str] = None
+    turnstile_token: Optional[str] = None
 
 class AuthResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

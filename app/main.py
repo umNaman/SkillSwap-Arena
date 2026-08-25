@@ -9,9 +9,10 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import async_session_maker, engine, init_db
-from app.routers import agora, ai_insights, auth, dashboard, feedback, identity, sessions
+from app.routers import agora, ai_insights, auth, coding_arena, dashboard, feedback, identity, sessions
 from app.seed import seed_demo_data
 from app.websockets.session_ws import session_websocket_endpoint
+from app.websockets.coding_ws import coding_websocket_endpoint
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -48,6 +49,7 @@ app.include_router(feedback.router)
 app.include_router(identity.router)
 app.include_router(agora.router)
 app.include_router(ai_insights.router)
+app.include_router(coding_arena.router)
 
 app.mount("/static", StaticFiles(directory=PROJECT_ROOT / "static"), name="static")
 
@@ -76,6 +78,12 @@ async def app_page() -> FileResponse:
     return FileResponse(PROJECT_ROOT / "app.html")
 
 
+@app.get("/coding-arena", include_in_schema=False)
+@app.get("/coding-arena.html", include_in_schema=False)
+async def coding_arena_page() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "coding-arena.html")
+
+
 @app.get("/index.html", include_in_schema=False)
 async def index_html() -> FileResponse:
     return FileResponse(PROJECT_ROOT / "index.html")
@@ -90,3 +98,8 @@ async def video_session_redirect() -> RedirectResponse:
 @app.websocket("/ws/sessions/{session_id}/{participant_id}")
 async def session_websocket(websocket: WebSocket, session_id: str, participant_id: str) -> None:
     await session_websocket_endpoint(websocket, session_id, participant_id)
+
+
+@app.websocket("/ws/coding/{battle_id}")
+async def coding_websocket(websocket: WebSocket, battle_id: str, token: str = "") -> None:
+    await coding_websocket_endpoint(websocket, battle_id, token)

@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.auth import LoginRequest, RegisterRequest, AnonymousLoginRequest, AuthResponse, AnonymousAuthResponse
 from app.services import auth as auth_service
+from app.config import settings
+import httpx
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -38,6 +40,25 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
 
 @router.post("/anonymous", response_model=AnonymousAuthResponse)
 async def login_anonymous(request: AnonymousLoginRequest, db: AsyncSession = Depends(get_db)):
+    if not request.turnstile_token:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CAPTCHA verification required.")
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            verify_response = await client.post(
+                "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                data={
+                    "secret": settings.TURNSTILE_SECRET_KEY,
+                    "response": request.turnstile_token,
+                },
+                timeout=10.0
+            )
+            data = verify_response.json()
+            if not data.get("success"):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CAPTCHA verification failed.")
+    except httpx.HTTPError:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not communicate with CAPTCHA service.")
+
     user = await auth_service.create_anonymous_user(db, request.alias, request.cohort_code)
     guest_id = str(user.id)
     return {
@@ -56,6 +77,10 @@ def _serialize_user(user) -> dict:
         "cohort_code": user.cohort_code,
         "is_anonymous": user.is_anonymous,
     }
+
+@router.get("/config/turnstile")
+async def get_turnstile_config():
+    return {"site_key": settings.TURNSTILE_SITE_KEY}
 
 @router.get("/oauth/google")
 async def oauth_google():

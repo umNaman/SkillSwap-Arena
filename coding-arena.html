@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080B0F">
+  <title>CODING ARENA — SkillSwap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="/static/theme.js"></script>
+  <link rel="stylesheet" href="/static/theme.css">
+  <link rel="stylesheet" href="/static/coding-arena.css">
+</head>
+<body>
+<div class="ca-shell">
+  <aside class="ca-sidebar" id="ca-sidebar">
+    <a class="ca-brand" href="/app"><span class="brand-mark"></span><span>SkillSwap</span></a>
+    <div class="ca-side-title"><span>CODING</span> ARENA<small>Solve. Compete. Improve.</small></div>
+    <nav>
+      <button class="ca-nav active" data-view="home"><span>⌂</span> Arena Home</button>
+      <button class="ca-nav" data-action="mode" data-mode="head_to_head"><span>⚡</span> Head to Head</button>
+      <button class="ca-nav" data-action="mode" data-mode="attack"><span>↗</span> Attack</button>
+      <button class="ca-nav" data-action="friend"><span>⌁</span> Friend vs Friend</button>
+      <button class="ca-nav" data-action="revision"><span>◇</span> Quick Revision</button>
+      <button class="ca-nav" data-view="history"><span>◷</span> Coding History</button>
+    </nav>
+    <div class="ca-side-bottom">
+      <div class="ca-points-mini"><span>ARENA POINTS</span><strong id="side-points">200</strong></div>
+      <a href="/app" class="ca-back">← SkillSwap Dashboard</a>
+    </div>
+  </aside>
+
+  <main class="ca-main">
+    <header class="ca-topbar">
+      <button class="ca-menu" id="ca-menu" aria-label="Open menu">☰</button>
+      <div class="ca-top-title" id="ca-top-title">CODING ARENA</div>
+      <div class="ca-top-actions">
+        <span class="provider-pill" id="provider-pill">Checking execution…</span>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"></button>
+        <div class="ca-user" id="ca-user">?</div>
+      </div>
+    </header>
+
+    <section class="ca-view active" id="view-home">
+      <div class="ca-hero">
+        <div><div class="eyebrow">SKILLSWAP COMPETITIVE CODING</div><h1>CODING <span>ARENA</span></h1><p>Solve. Compete. Improve.</p></div>
+        <div class="points-card"><span>YOUR BALANCE</span><strong id="hero-points">200</strong><small>ARENA POINTS</small></div>
+      </div>
+      <div class="mode-grid">
+        <button class="mode-card" data-action="mode" data-mode="head_to_head"><span class="mode-num">01</span><i>⚡</i><h2>HEAD TO HEAD</h2><p>Race another learner on the same problem.</p><b>FIND OPPONENT →</b></button>
+        <button class="mode-card" data-action="mode" data-mode="attack"><span class="mode-num">02</span><i>↗</i><h2>ATTACK</h2><p>Keep solving. Build your streak.</p><b>START ATTACK →</b></button>
+        <button class="mode-card" data-action="friend"><span class="mode-num">03</span><i>⌁</i><h2>FRIEND VS FRIEND</h2><p>Challenge a friend in a private coding battle.</p><b>OPEN PRIVATE ROOM →</b></button>
+        <button class="mode-card" data-action="revision"><span class="mode-num">04</span><i>◇</i><h2>QUICK REVISION</h2><p>Refresh syntax and concepts before you compete.</p><b>REVISE NOW →</b></button>
+      </div>
+      <div class="home-lower">
+        <div class="ca-panel"><div class="panel-head"><div><span class="eyebrow">RECENT POINTS</span><h3>ARENA LEDGER</h3></div><button class="text-btn" data-view="history">View history</button></div><div id="ledger" class="ledger"></div></div>
+        <div class="ca-panel reward"><span class="eyebrow">REWARDS</span><h3>COMING SOON</h3><p>Use Arena Points for future SkillSwap rewards, vouchers and partner perks.</p></div>
+      </div>
+    </section>
+
+    <section class="ca-view" id="view-setup">
+      <button class="crumb" data-view="home">← CODING ARENA</button>
+      <div class="setup-wrap">
+        <div class="setup-copy"><span class="eyebrow" id="setup-mode-label">HEAD TO HEAD</span><h1>CHOOSE YOUR<br><span>LOADOUT</span></h1><p>Matchmaking uses every selection. You will only face a learner using the same language, difficulty and topic.</p></div>
+        <form class="ca-panel setup-form" id="setup-form">
+          <div class="step"><span>01</span><div><label>LANGUAGE</label><div class="choice-row" data-choice="language"><button type="button" data-value="python" class="active">Python 3<small>main.py</small></button><button type="button" data-value="cpp">C++17<small>main.cpp</small></button><button type="button" data-value="java">Java<small>Main.java</small></button></div></div></div>
+          <div class="step"><span>02</span><div><label>DIFFICULTY</label><div class="choice-row" data-choice="difficulty"><button type="button" data-value="easy" class="active">Easy</button><button type="button" data-value="medium">Medium</button><button type="button" data-value="hard">Hard</button></div></div></div>
+          <div class="step"><span>03</span><div><label>TOPIC</label><div class="choice-row" data-choice="topic"><button type="button" data-value="arrays" class="active">Arrays</button><button type="button" data-value="strings">Strings</button><button type="button" data-value="searching">Searching</button><button type="button" data-value="sorting">Sorting</button></div></div></div>
+          <button class="primary-btn" id="setup-submit">FIND OPPONENT →</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="ca-view center-view" id="view-matchmaking">
+      <div class="radar"><div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-scan"></div><div class="radar-core">VS</div></div>
+      <span class="eyebrow">LANGUAGE-AWARE MATCHMAKING</span><h1>SEARCHING FOR OPPONENT<span class="dots">...</span></h1><p id="match-key">PYTHON 3 · EASY · ARRAYS</p>
+      <button class="secondary-btn" data-view="home">CANCEL SEARCH</button>
+    </section>
+
+    <section class="ca-view" id="view-friend">
+      <button class="crumb" data-view="home">← CODING ARENA</button>
+      <div class="view-heading"><span class="eyebrow">PRIVATE BATTLE</span><h1>FRIEND VS FRIEND</h1><p>Create a room and share its six-character code, or join a friend's battle.</p></div>
+      <div class="friend-grid">
+        <div class="ca-panel"><h2>CREATE ROOM</h2><p class="muted">You choose the language, difficulty and topic.</p><button class="primary-btn" id="friend-create">CHOOSE LOADOUT →</button></div>
+        <div class="ca-panel"><h2>JOIN ROOM</h2><p class="muted">Your friend's settings and exact problem are inherited.</p><input class="room-input" id="room-code-input" maxlength="6" placeholder="K7PX42" autocomplete="off"><button class="secondary-btn full" id="friend-join">JOIN ROOM →</button></div>
+      </div>
+      <div class="room-wait ca-panel" id="room-wait"><span class="eyebrow">ROOM READY</span><h2 id="room-code-display">K7PX42</h2><p>Share this code with your friend. The battle starts automatically when they join.</p><button class="text-btn" id="copy-room">COPY CODE</button></div>
+    </section>
+
+    <section class="ca-view" id="view-workspace">
+      <div class="battle-bar"><button class="crumb" id="leave-workspace">← END</button><strong>CODING ARENA</strong><div class="battle-tags"><span id="battle-language">PYTHON 3</span><span id="battle-difficulty">EASY</span><span id="battle-topic">ARRAYS</span></div><div class="timer" id="battle-timer">00:00</div><div class="points-inline"><small>POINTS</small><b id="workspace-points">200</b></div></div>
+      <div class="workspace-grid">
+        <article class="problem-pane">
+          <div class="problem-scroll"><div class="problem-meta"><span id="problem-number">PROBLEM</span><span id="problem-difficulty">EASY</span></div><h1 id="problem-title">Loading…</h1><p id="problem-statement"></p><h3>INPUT</h3><p id="problem-input"></p><h3>OUTPUT</h3><p id="problem-output"></p><h3>EXAMPLES</h3><div id="problem-examples"></div><h3>CONSTRAINTS</h3><ul id="problem-constraints"></ul></div>
+        </article>
+        <section class="editor-pane">
+          <div class="editor-head"><span id="editor-filename">main.py</span><span class="editor-status" id="editor-status">READY</span></div>
+          <textarea id="code-editor" spellcheck="false" aria-label="Code editor"></textarea>
+          <div class="io-tabs"><button class="active" data-io="input">CUSTOM INPUT</button><button data-io="output">OUTPUT / CONSOLE</button></div>
+          <textarea class="io-box" id="custom-input" placeholder="Enter input for Run Code…"></textarea>
+          <pre class="io-box hidden" id="console-output">Run your code to see output.</pre>
+          <div class="editor-actions"><button class="secondary-btn" id="run-code">▷ RUN CODE</button><button class="primary-btn" id="submit-code">SUBMIT →</button></div>
+        </section>
+        <aside class="battle-side">
+          <div class="ca-panel opponent-card" id="opponent-card"><span class="eyebrow">OPPONENT</span><h3 id="opponent-alias">Solo Attack</h3><div class="opponent-state"><i></i><span id="opponent-status">No opponent</span></div></div>
+          <div class="ca-panel hint-card"><span class="eyebrow">HINTS</span><div id="unlocked-hints"></div><button class="secondary-btn full" id="hint-button">HINT — COSTS 50 POINTS</button></div>
+          <div class="ca-panel attack-stats" id="attack-stats"><span class="eyebrow">ATTACK STATS</span><div><span>Solved</span><b id="attack-solved">0</b></div><div><span>Attempted</span><b id="attack-attempted">0</b></div><div><span>Accuracy</span><b id="attack-accuracy">0%</b></div><div><span>Total Time</span><b id="attack-total-time">00:00</b></div><div><span>Current Streak</span><b id="attack-streak">0</b></div><div><span>Best Streak</span><b id="attack-best">0</b></div><div><span>Arena Points</span><b id="attack-points">200</b></div></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="ca-view" id="view-results">
+      <div class="result-wrap"><span class="eyebrow" id="result-mode">BATTLE COMPLETE</span><h1 id="result-title">VICTORY</h1><p class="result-time">Solved in <strong id="result-time">03:42</strong></p><div class="result-grid"><div class="ca-panel"><h3>POINTS</h3><div id="result-points" class="point-breakdown"></div></div><div class="ca-panel"><h3>YOUR PERFORMANCE vs COMMUNITY</h3><div id="community-result" class="performance-grid"></div></div></div><div class="result-actions"><button class="secondary-btn" id="practice-again">PRACTICE AGAIN</button><button class="primary-btn" id="return-arena" data-view="home">CODING ARENA</button></div></div>
+    </section>
+
+    <section class="ca-view" id="view-revision">
+      <button class="crumb" data-view="home">← CODING ARENA</button><div class="view-heading"><span class="eyebrow">NO TIMER · NO POINTS · NO COMPILER</span><h1>QUICK REVISION</h1><p>Short, useful syntax sheets before you compete.</p></div>
+      <div class="revision-controls"><select id="revision-language"><option value="python">Python</option><option value="cpp">C++</option><option value="java">Java</option></select><select id="revision-topic"><option value="arrays">Arrays</option><option value="strings">Strings</option><option value="searching">Searching</option><option value="sorting">Sorting</option></select></div>
+      <div class="revision-sheet ca-panel" id="revision-sheet"></div>
+    </section>
+
+    <section class="ca-view" id="view-history">
+      <div class="view-heading"><span class="eyebrow">PROFILE & HISTORY</span><h1>CODING PROGRESS</h1><p>Your Coding Arena record lives alongside — and never replaces — GD history.</p></div>
+      <div class="profile-stats" id="profile-stats"></div><div class="history-layout"><div class="ca-panel"><h2>RECENT SUBMISSIONS</h2><div id="submission-history"></div></div><div class="ca-panel"><h2>POINT TRANSACTIONS</h2><div id="transaction-history" class="ledger"></div></div></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="confirm-dialog"><form method="dialog"><span class="eyebrow">CONFIRM HINT</span><h2>Reveal this hint for 50 Arena Points?</h2><p>Hints stay unlocked for this problem and will never be charged twice.</p><div><button class="secondary-btn" value="cancel">CANCEL</button><button class="primary-btn" value="confirm">REVEAL HINT (-50)</button></div></form></dialog>
+<div class="toast" id="toast" role="status"></div>
+<script src="/static/coding-arena.js"></script>
+</body>
+</html>

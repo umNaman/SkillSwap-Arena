@@ -87,3 +87,119 @@
     initializeControls();
   }
 })();
+
+  const initUserDropdown = () => {
+    const avatarEl = document.getElementById('topbar-avatar') || document.getElementById('ca-user');
+    if (!avatarEl || avatarEl.closest('.user-dropdown-wrapper')) return;
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('ss_user') || 'null'); } catch {}
+    const isGuest = !!sessionStorage.getItem('ss_guest_token');
+    const alias = sessionStorage.getItem('ss_alias') || localStorage.getItem('ss_alias') || user?.default_alias || 'Coder';
+    const email = user?.email || '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'user-dropdown-wrapper';
+    
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'user-dropdown-btn';
+    btn.setAttribute('aria-label', 'User menu');
+    btn.setAttribute('aria-expanded', 'false');
+    
+    avatarEl.parentNode.insertBefore(wrapper, avatarEl);
+    btn.appendChild(avatarEl);
+    wrapper.appendChild(btn);
+
+    const menu = document.createElement('div');
+    menu.className = 'user-dropdown-menu';
+    
+    const emailHtml = email ? `<div class="user-dropdown-email">${email.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}</div>` : '';
+    const safeAlias = alias.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    
+    menu.innerHTML = `
+      <div class="user-dropdown-header">
+        <div class="user-dropdown-name">${safeAlias}</div>
+        ${emailHtml}
+      </div>
+      <button type="button" class="user-dropdown-item" id="dd-dashboard">Dashboard</button>
+      <button type="button" class="user-dropdown-item" id="dd-progress">My Progress</button>
+      <button type="button" class="user-dropdown-item" id="dd-history">Session History</button>
+      <div class="user-dropdown-divider"></div>
+      <button type="button" class="user-dropdown-item danger" id="dd-logout">${isGuest ? 'Sign In / Exit Guest Session' : 'Log out'}</button>
+    `;
+    wrapper.appendChild(menu);
+
+    const toggle = (e) => {
+      e?.stopPropagation();
+      const isOpen = menu.classList.contains('open');
+      menu.classList.toggle('open', !isOpen);
+      btn.setAttribute('aria-expanded', !isOpen);
+    };
+
+    btn.addEventListener('click', toggle);
+
+    document.addEventListener('click', (e) => {
+      if (!wrapper.contains(e.target)) {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        menu.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.getElementById('dd-dashboard').addEventListener('click', () => {
+      if (window.location.pathname.includes('coding-arena')) window.location.href = '/app';
+      else if (typeof showScreen === 'function') showScreen('dashboard');
+      menu.classList.remove('open');
+    });
+
+    document.getElementById('dd-progress').addEventListener('click', () => {
+      if (window.location.pathname.includes('coding-arena') && typeof showView === 'function') {
+        showView('history');
+      } else {
+        if (window.location.pathname.includes('coding-arena')) {
+           window.location.href = '/app';
+        } else if (typeof showScreen === 'function') {
+           showScreen('dashboard');
+        }
+      }
+      menu.classList.remove('open');
+    });
+
+    document.getElementById('dd-history').addEventListener('click', () => {
+      if (window.location.pathname.includes('coding-arena') && typeof showView === 'function') {
+        showView('history');
+      } else if (typeof showScreen === 'function') {
+        showScreen('history');
+      } else {
+        window.location.href = '/app';
+      }
+      menu.classList.remove('open');
+    });
+
+    document.getElementById('dd-logout').addEventListener('click', () => {
+      if (typeof handleLogout === 'function') {
+        handleLogout();
+      } else {
+        localStorage.removeItem('ss_token');
+        localStorage.removeItem('ss_user');
+        sessionStorage.removeItem('ss_guest_token');
+        sessionStorage.removeItem('ss_guest_id');
+        sessionStorage.removeItem('ss_alias');
+        window.location.href = '/login_page.html';
+      }
+    });
+  };
+
+  // Attach to DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUserDropdown);
+  } else {
+    initUserDropdown();
+  }
