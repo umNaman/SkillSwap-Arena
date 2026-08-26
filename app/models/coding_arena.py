@@ -88,6 +88,7 @@ class AttackSession(Base):
     difficulty: Mapped[str] = mapped_column(String(16))
     topic: Mapped[str] = mapped_column(String(24))
     attempted: Mapped[int] = mapped_column(Integer, default=0)
+    submission_attempts: Mapped[int] = mapped_column(Integer, default=0)
     solved: Mapped[int] = mapped_column(Integer, default=0)
     current_streak: Mapped[int] = mapped_column(Integer, default=0)
     best_streak: Mapped[int] = mapped_column(Integer, default=0)

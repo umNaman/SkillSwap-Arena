@@ -124,7 +124,7 @@ async def history(current_user=Depends(get_current_user), db: AsyncSession = Dep
     return {"submissions": [{"id": str(s.id), "problem_id": s.problem_id, "title": BY_ID[s.problem_id].title,
         "mode": s.mode, "language": s.language, "accepted": s.accepted, "passed_tests": s.passed_tests,
         "total_tests": s.total_tests, "solve_seconds": s.solve_seconds, "created_at": s.created_at.isoformat()} for s in submissions],
-        "attack_sessions": [{"id": str(a.id), "attempted": a.attempted, "solved": a.solved,
+        "attack_sessions": [{"id": str(a.id), "attempted": a.attempted, "solved": a.solved, "submission_attempts": a.submission_attempts,
         "best_streak": a.best_streak, "points_earned": a.points_earned,
         "total_seconds": a.total_seconds, "ended_at": a.ended_at.isoformat() if a.ended_at else None} for a in attacks]}
 
@@ -248,7 +248,16 @@ async def submit(request: SubmitRequest, current_user=Depends(get_current_user),
                 CodingSubmission.user_id == current_user.id, CodingSubmission.session_id == request.session_id,
                 CodingSubmission.problem_id == request.problem_id, CodingSubmission.accepted == True,
                 CodingSubmission.id != submission.id).limit(1))
-            attack.attempted += 1; attack.total_seconds += solve_seconds
+            prior_attack_attempt = await db.scalar(select(CodingSubmission.id).where(
+                CodingSubmission.user_id == current_user.id, CodingSubmission.session_id == request.session_id,
+                CodingSubmission.problem_id == request.problem_id,
+                CodingSubmission.id != submission.id).limit(1))
+                
+            attack.submission_attempts += 1
+            if not prior_attack_attempt:
+                attack.attempted += 1
+                
+            attack.total_seconds += solve_seconds
             if accepted and not prior_attack_solve:
                 attack.solved += 1; attack.current_streak += 1; attack.best_streak = max(attack.best_streak, attack.current_streak)
                 attack.fastest_seconds = min(v for v in (attack.fastest_seconds, solve_seconds) if v is not None)
@@ -292,6 +301,7 @@ async def attack_end(session_id: uuid.UUID, current_user=Depends(get_current_use
     if not attack or attack.user_id != current_user.id: raise HTTPException(404, "Attack session not found")
     attack.active = False; attack.ended_at = datetime.now(timezone.utc); await db.commit()
     return {"attempted": attack.attempted, "solved": attack.solved,
+        "submission_attempts": attack.submission_attempts,
         "accuracy": round(attack.solved / attack.attempted * 100, 1) if attack.attempted else 0,
         "average_solve_seconds": round(attack.total_seconds / attack.attempted) if attack.attempted else None,
         "fastest_solve_seconds": attack.fastest_seconds, "longest_streak": attack.best_streak,
