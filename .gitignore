@@ -6,3 +6,26 @@ __pycache__/
 .pytest_cache/
 skillswap.db
 skillswap.db-*
+
+# Local environments
+.venv/
+venv/
+
+# Secrets
+.env
+.env.*
+
+# Keep template env file
+!.env.example
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Local/debug files
+*.log
+scratch/
+output.txt
